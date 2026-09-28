@@ -1,0 +1,478 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // Local: sqlite. Production (Vercel/Neon): change provider to "postgresql"
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CASHIER
+  SUPERVISOR
+  ADMIN
+}
+
+enum OrderStatus {
+  OPEN
+  HELD
+  COMPLETED
+  VOIDED
+  RETURNED
+  CANCELLED
+}
+
+/** Kitchen / handoff after payment (sale status stays COMPLETED when paid). */
+enum FulfillmentStatus {
+  IN_PROCESS
+  DELIVERED
+  DONE
+}
+
+enum OrderSource {
+  POS
+  ONLINE
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+}
+
+enum DiscountType {
+  NONE
+  PERCENT
+  FIXED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  OTHER
+  GIFT_CARD
+}
+
+enum InventoryTxnType {
+  ADD
+  REDUCE
+  ADJUST
+  SALE
+  RECEIVE
+  RETURN
+  VOID
+  WASTAGE
+  PURCHASE
+}
+
+enum CashMovementType {
+  OPENING_FLOAT
+  SALE
+  REFUND
+  EXPENSE
+  CASH_IN
+  CASH_OUT
+  ADJUSTMENT
+  CLOSING
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(CASHIER)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ordersCreated         Order[]                @relation("OrderCreatedBy")
+  ordersVoided          Order[]                @relation("OrderVoidedBy")
+  inventoryTransactions InventoryTransaction[]
+  shifts                Shift[]                @relation("ShiftUser")
+  shiftsCreated         Shift[]                @relation("ShiftCreatedBy")
+  registerSessions      RegisterSession[]      @relation("RegisterOpenedBy")
+  registerClosed        RegisterSession[]      @relation("RegisterClosedBy")
+  expenses              Expense[]
+  receivings            Receiving[]
+  auditLogs             AuditLog[]
+  giftCardsIssued       GiftCard[]             @relation("GiftCardIssuedBy")
+  giftCardTransactions  GiftCardTransaction[]
+  cashMovements         CashMovement[]
+
+  @@index([role])
+  @@index([active])
+}
+
+model Shift {
+  id          String   @id @default(cuid())
+  userId      String
+  startAt     DateTime
+  endAt       DateTime
+  notes       String?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User  @relation("ShiftUser", fields: [userId], references: [id], onDelete: Cascade)
+  createdBy User? @relation("ShiftCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([startAt])
+  @@index([endAt])
+}
+
+model Customer {
+  id         String     @id @default(cuid())
+  name       String
+  phone      String?
+  email      String?
+  address    String?
+  landmark   String?
+  notes      String?
+  active     Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  orders     Order[]
+  giftCards  GiftCard[]
+
+  @@index([name])
+  @@index([phone])
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  sortOrder Int       @default(0)
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+
+  @@index([active, sortOrder])
+}
+
+model Product {
+  id              String    @id @default(cuid())
+  name            String
+  description     String?
+  price           Decimal
+  categoryId      String
+  sku             String?   @unique
+  imageUrl        String?
+  isActive        Boolean   @default(true)
+  isTemporary     Boolean   @default(false)
+  availableFrom   DateTime?
+  availableTo     DateTime?
+  trackInventory  Boolean   @default(false)
+  inventoryItemId String?   @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  category      Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  inventoryItem InventoryItem? @relation(fields: [inventoryItemId], references: [id], onDelete: SetNull)
+  orderItems    OrderItem[]
+  kitItems      KitItem[]      @relation("KitProduct")
+  kitComponents KitItem[]      @relation("ComponentProduct")
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([isTemporary])
+}
+
+/** Combo / meal deal (OSPOS item kits) */
+model KitItem {
+  id                String @id @default(cuid())
+  kitProductId      String
+  componentProductId String
+  quantity          Int    @default(1)
+
+  kitProduct      Product @relation("KitProduct", fields: [kitProductId], references: [id], onDelete: Cascade)
+  componentProduct Product @relation("ComponentProduct", fields: [componentProductId], references: [id], onDelete: Cascade)
+
+  @@unique([kitProductId, componentProductId])
+}
+
+model Order {
+  id               String            @id @default(cuid())
+  orderNumber      String            @unique
+  status           OrderStatus       @default(COMPLETED)
+  fulfillmentStatus FulfillmentStatus @default(IN_PROCESS)
+  source           OrderSource       @default(POS)
+  orderType        OrderType         @default(TAKEAWAY)
+  subtotal         Decimal
+  discountType     DiscountType @default(NONE)
+  discountValue    Decimal      @default(0)
+  discountAmount   Decimal      @default(0)
+  total            Decimal
+  notes            String?
+  voidReason       String?
+  createdById      String
+  voidedById       String?
+  customerId       String?
+  registerSessionId String?
+  customerName     String?
+  customerPhone    String?
+  customerAddress  String?
+  customerLandmark String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  createdBy             User                   @relation("OrderCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  voidedBy              User?                  @relation("OrderVoidedBy", fields: [voidedById], references: [id], onDelete: SetNull)
+  customer              Customer?              @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  registerSession       RegisterSession?       @relation(fields: [registerSessionId], references: [id], onDelete: SetNull)
+  items                 OrderItem[]
+  payments              Payment[]
+  inventoryTransactions InventoryTransaction[]
+
+  @@index([createdAt])
+  @@index([status])
+  @@index([createdById])
+  @@index([orderNumber])
+  @@index([customerId])
+  @@index([registerSessionId])
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String
+  productId   String?
+  productName String
+  unitPrice   Decimal
+  quantity    Int
+  lineTotal   Decimal
+  notes       String?
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  orderId       String
+  method        PaymentMethod
+  amount        Decimal
+  giftCardId    String?
+  giftCardCode  String?
+  createdAt     DateTime      @default(now())
+
+  order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  giftCard GiftCard? @relation(fields: [giftCardId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([method])
+  @@index([giftCardId])
+}
+
+/** Loyalty / prepaid balance for repeat customers */
+model GiftCard {
+  id         String    @id @default(cuid())
+  code       String    @unique
+  customerId String
+  balance    Decimal   @default(0)
+  active     Boolean   @default(true)
+  expiresAt  DateTime?
+  issuedById String?
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  customer     Customer              @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  issuedBy     User?                 @relation("GiftCardIssuedBy", fields: [issuedById], references: [id], onDelete: SetNull)
+  transactions GiftCardTransaction[]
+  payments     Payment[]
+
+  @@index([customerId])
+  @@index([active])
+}
+
+enum GiftCardTxnType {
+  ISSUE
+  RELOAD
+  REDEEM
+  REFUND
+  ADJUST
+}
+
+model GiftCardTransaction {
+  id           String          @id @default(cuid())
+  giftCardId   String
+  type         GiftCardTxnType
+  amount       Decimal
+  balanceAfter Decimal
+  orderId      String?
+  userId       String?
+  note         String?
+  createdAt    DateTime        @default(now())
+
+  giftCard GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+  user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([giftCardId])
+  @@index([createdAt])
+  @@index([type])
+}
+
+model Supplier {
+  id             String          @id @default(cuid())
+  name           String
+  contact        String?
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  inventoryItems InventoryItem[]
+  receivings     Receiving[]
+}
+
+model InventoryItem {
+  id           String   @id @default(cuid())
+  name         String
+  sku          String?  @unique
+  quantity     Decimal
+  unit         String   @default("pcs")
+  minThreshold Decimal  @default(0)
+  supplierId   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  supplier         Supplier?              @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  product          Product?
+  transactions     InventoryTransaction[]
+  receivingItems   ReceivingItem[]
+
+  @@index([quantity])
+  @@index([supplierId])
+}
+
+model InventoryTransaction {
+  id        String           @id @default(cuid())
+  itemId    String
+  type      InventoryTxnType
+  quantity  Decimal
+  reason    String?
+  userId    String?
+  orderId   String?
+  createdAt DateTime         @default(now())
+
+  item  InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user  User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  order Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([itemId])
+  @@index([createdAt])
+  @@index([type])
+}
+
+/** OSPOS-style cash register open / cash-up close */
+model RegisterSession {
+  id              String    @id @default(cuid())
+  openedById      String
+  closedById      String?
+  openedAt        DateTime  @default(now())
+  closedAt        DateTime?
+  openingFloat    Decimal   @default(0)
+  closingCounted  Decimal?
+  expectedCash    Decimal?
+  variance        Decimal?
+  notes           String?
+  status          String    @default("OPEN") // OPEN | CLOSED
+
+  openedBy     User           @relation("RegisterOpenedBy", fields: [openedById], references: [id], onDelete: Restrict)
+  closedBy     User?          @relation("RegisterClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
+  orders       Order[]
+  cashMovements CashMovement[]
+
+  @@index([status])
+  @@index([openedAt])
+}
+
+/** Ledger of physical cash drawer movements (source of truth for cash). */
+model CashMovement {
+  id                String           @id @default(cuid())
+  registerSessionId String
+  type              CashMovementType
+  /** Signed amount in rupees: + into drawer, - out of drawer */
+  amount            Decimal
+  orderId           String?
+  userId            String?
+  note              String?
+  createdAt         DateTime         @default(now())
+
+  registerSession RegisterSession @relation(fields: [registerSessionId], references: [id], onDelete: Cascade)
+  user             User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([registerSessionId])
+  @@index([createdAt])
+  @@index([type])
+}
+
+model Receiving {
+  id         String   @id @default(cuid())
+  reference  String?
+  supplierId String?
+  notes      String?
+  userId     String
+  totalCost  Decimal  @default(0)
+  createdAt  DateTime @default(now())
+
+  supplier Supplier?       @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items    ReceivingItem[]
+
+  @@index([createdAt])
+}
+
+model ReceivingItem {
+  id              String  @id @default(cuid())
+  receivingId     String
+  inventoryItemId String
+  quantity        Decimal
+  unitCost        Decimal @default(0)
+
+  receiving     Receiving     @relation(fields: [receivingId], references: [id], onDelete: Cascade)
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Restrict)
+
+  @@index([receivingId])
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  category    String
+  description String?
+  amount      Decimal
+  paidAt      DateTime @default(now())
+  userId      String
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([paidAt])
+  @@index([category])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String?
+  entityId   String?
+  details    String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([action])
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}

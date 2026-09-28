@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# What The Food — Café POS & Management
 
-## Getting Started
+Phase 1 POS for **What The Food** (Karachi).
 
-First, run the development server:
+## Architecture
+
+Modular monolith. Business rules live in `src/modules/*/application` use cases; UI and `src/actions` are thin adapters. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+Money is calculated in integer **paisa**. Completing a sale, void/return, register open/close, stock adjust/receive, and cash expenses run inside DB transactions with ledger writes.
+
+## Phase 1 capabilities
+
+| Area | Status |
+|------|--------|
+| POS sale (split tender, hold/resume, discounts) | Engineered — `CompleteSale` / `HoldSale` |
+| Void / return with stock + gift restore | Engineered — supervisor use cases |
+| Cash register open / close + drawer ledger | Engineered |
+| Inventory ledger (sale / receive / adjust / wastage) | Engineered |
+| Gift cards (issue, reload, redeem on POS) | Engineered — ledger-backed |
+| Customers, expenses (cash → drawer), receivings | Engineered |
+| Roles (Cashier / Supervisor / Admin) | Server-enforced |
+| Reports / dashboard | Reads from completed orders |
+| Unit + workflow integration tests | `npm test` (14 tests) |
+
+## Tech stack
+
+- Next.js 15 (App Router) + TypeScript + Tailwind CSS
+- Auth.js (NextAuth v5) credentials + bcrypt
+- Prisma ORM
+- SQLite for local development · PostgreSQL for production on Vercel
+
+## Quick start (local)
 
 ```bash
+cp .env.example .env
+npm install
+npm run db:setup
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Seed logins (change in production)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@whatthefood.local` | `password123` |
+| Supervisor | `supervisor@whatthefood.local` | `password123` |
+| Cashier | `cashier@whatthefood.local` | `password123` |
 
-## Learn More
+## Environment variables
 
-To learn more about Next.js, take a look at the following resources:
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | Local: `file:./dev.db` · Production: Postgres URL |
+| `AUTH_SECRET` | `openssl rand -base64 32` |
+| `AUTH_URL` | App URL (`http://localhost:3000` or production domain) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `npm run dev` — development server
+- `npm run build` / `npm start` — production build
+- `npm run db:setup` — push schema + seed
+- `npm run db:studio` — Prisma Studio
+- `npm test` — unit + POS workflow integration tests
 
-## Deploy on Vercel
+## Training
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+See [docs/TRAINING.md](docs/TRAINING.md).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Out of scope (Phase 1)
+
+Customer ordering app, payment gateways, IoT, tax engines, loyalty, delivery platforms.
