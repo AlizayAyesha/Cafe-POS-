@@ -1,44 +1,42 @@
 "use client";
 
-import { useState } from "react";
-import { signIn, getSession } from "next-auth/react";
+import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
+import { loginAction } from "@/actions/auth";
+
+function isNextRedirect(error: unknown): boolean {
+  return (
+    !!error &&
+    typeof error === "object" &&
+    "digest" in error &&
+    typeof (error as { digest?: unknown }).digest === "string" &&
+    (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+  );
+}
 
 export function LoginForm() {
   const params = useSearchParams();
   const [email, setEmail] = useState("admin@whatthefood.local");
   const [password, setPassword] = useState("password123");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [pending, startTransition] = useTransition();
 
-  async function onSubmit(e: React.FormEvent) {
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
-    const res = await signIn("credentials", {
-      email: email.trim().toLowerCase(),
-      password,
-      redirect: false,
+    startTransition(async () => {
+      try {
+        const result = await loginAction(email, password, params.get("callbackUrl"));
+        if (result && !result.ok) {
+          setError(result.error);
+        }
+        // Success redirects via Auth.js / Next.js — no client navigation needed
+      } catch (err) {
+        if (isNextRedirect(err)) throw err;
+        setError("Invalid email or password");
+      }
     });
-
-    if (res?.error || !res?.ok) {
-      setLoading(false);
-      setError("Invalid email or password");
-      return;
-    }
-
-    const session = await getSession();
-    const role = (session?.user as { role?: string } | undefined)?.role;
-    const callback = params.get("callbackUrl");
-    let dest = "/pos";
-    if (callback && callback.startsWith("/") && !callback.startsWith("//")) {
-      dest = callback;
-    } else if (role === "ADMIN" || role === "SUPERVISOR") {
-      dest = "/admin";
-    }
-
-    window.location.assign(dest);
   }
 
   return (
@@ -46,7 +44,11 @@ export function LoginForm() {
       <div>
         <label className="mb-1 block text-sm font-medium text-[var(--ink)]">Email</label>
         <input
-          type="email"
+          type="text"
+          name="email"
+          inputMode="email"
+          autoCapitalize="none"
+          autoCorrect="off"
           required
           autoComplete="username"
           value={email}
@@ -58,6 +60,7 @@ export function LoginForm() {
         <label className="mb-1 block text-sm font-medium text-[var(--ink)]">Password</label>
         <input
           type="password"
+          name="password"
           required
           autoComplete="current-password"
           value={password}
@@ -66,8 +69,8 @@ export function LoginForm() {
         />
       </div>
       {error && <p className="text-sm text-red-700">{error}</p>}
-      <button type="submit" disabled={loading} className="touch-btn btn-primary w-full px-4 py-3">
-        {loading ? "Signing in…" : "Sign in"}
+      <button type="submit" disabled={pending} className="touch-btn btn-primary w-full px-4 py-3">
+        {pending ? "Signing in…" : "Sign in"}
       </button>
     </form>
   );

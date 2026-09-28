@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-async function main() {
+export async function seedDatabase(client: PrismaClient = prisma) {
   const passwordHash = await bcrypt.hash("password123", 10);
 
   const renames: [string, string, Role, string][] = [
@@ -17,11 +17,11 @@ async function main() {
     ["cashier@thisissandwich.local", "cashier@whatthefood.local", Role.CASHIER, "Cashier"],
   ];
   for (const [from, to, role, name] of renames) {
-    const legacy = await prisma.user.findUnique({ where: { email: from } });
+    const legacy = await client.user.findUnique({ where: { email: from } });
     if (legacy) {
-      const clash = await prisma.user.findUnique({ where: { email: to } });
+      const clash = await client.user.findUnique({ where: { email: to } });
       if (!clash) {
-        await prisma.user.update({
+        await client.user.update({
           where: { id: legacy.id },
           data: { email: to, passwordHash, role, name, active: true },
         });
@@ -38,7 +38,7 @@ async function main() {
     },
     { email: "cashier@whatthefood.local", role: Role.CASHIER, name: "Cashier" },
   ]) {
-    await prisma.user.upsert({
+    await client.user.upsert({
       where: { email: u.email },
       update: { passwordHash, name: u.name, role: u.role, active: true },
       create: {
@@ -58,7 +58,7 @@ async function main() {
     address: "Karachi",
   };
   for (const [key, value] of Object.entries(settings)) {
-    await prisma.setting.upsert({
+    await client.setting.upsert({
       where: { key },
       create: { key, value },
       update: { value },
@@ -66,10 +66,10 @@ async function main() {
   }
 
   // Deactivate old demo categories/products that aren't on the real menu
-  await prisma.product.updateMany({ data: { isActive: false } });
+  await client.product.updateMany({ data: { isActive: false } });
 
   async function cat(name: string, sortOrder: number) {
-    return prisma.category.upsert({
+    return client.category.upsert({
       where: { name },
       update: { sortOrder, active: true },
       create: { name, sortOrder, active: true },
@@ -87,9 +87,9 @@ async function main() {
     sku: string;
     description?: string;
   }) {
-    const existing = await prisma.product.findFirst({ where: { sku: opts.sku } });
+    const existing = await client.product.findFirst({ where: { sku: opts.sku } });
     if (existing) {
-      return prisma.product.update({
+      return client.product.update({
         where: { id: existing.id },
         data: {
           name: opts.name,
@@ -101,7 +101,7 @@ async function main() {
         },
       });
     }
-    return prisma.product.create({
+    return client.product.create({
       data: {
         name: opts.name,
         price: opts.price,
@@ -218,6 +218,10 @@ async function main() {
   console.log("Seed complete — What The Food menu (This Is Sandwich items)");
   console.log("  admin@whatthefood.local / password123");
   console.log("  Update prices in Menu if flyer prices differ.");
+}
+
+async function main() {
+  await seedDatabase();
 }
 
 main()

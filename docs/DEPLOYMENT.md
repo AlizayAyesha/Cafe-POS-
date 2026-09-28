@@ -1,39 +1,41 @@
 # Production deployment checklist
 
-## Why Vercel was broken
-
-1. **SQLite cannot run on Vercel** — need PostgreSQL (`DATABASE_URL`).
-2. **Auth needs secrets** — without `AUTH_SECRET` + `AUTH_URL` you get
-   “There is a problem with the server configuration.”
-
-## Vercel → Settings → Environment Variables
-
-Add these for **Production** (and Preview if you use it):
+## Required Vercel env vars (Production)
 
 | Name | Value |
 |------|--------|
-| `DATABASE_URL` | Your Neon/Postgres URL ending with `?sslmode=require` |
-| `AUTH_SECRET` | Output of `openssl rand -base64 32` |
-| `NEXTAUTH_SECRET` | **Same** as `AUTH_SECRET` |
-| `AUTH_URL` | `https://YOUR-APP.vercel.app` (no trailing slash) |
-| `NEXTAUTH_URL` | **Same** as `AUTH_URL` |
+| `DATABASE_URL` | Postgres URL with `?sslmode=require` (Neon / Prisma Postgres) |
+| `AUTH_SECRET` | `openssl rand -base64 32` |
+| `NEXTAUTH_SECRET` | Same as `AUTH_SECRET` |
+| `AUTH_URL` | `https://cafe-pos-inky-zeta.vercel.app` |
+| `NEXTAUTH_URL` | `https://cafe-pos-inky-zeta.vercel.app` |
 
 Do **not** set `DATABASE_URL` to `file:./dev.db` on Vercel.
 
-## One-time database setup
+## Database setup
 
-1. Create a free DB at [neon.tech](https://neon.tech) → copy connection string.
-2. Paste it as `DATABASE_URL` on Vercel.
-3. From your laptop (schema is PostgreSQL):
+After `DATABASE_URL` is set:
 
 ```bash
-export DATABASE_URL="postgresql://...neon.../neondb?sslmode=require"
+export DATABASE_URL="postgresql://.../?sslmode=require"
 npx prisma db push
 npm run db:seed
 ```
 
-4. Redeploy on Vercel (Deployments → … → Redeploy).
+Then redeploy on Vercel.
 
-## Login after seed
+Optional re-seed from the live site (requires `SETUP_SECRET` env):
+
+```bash
+curl -X POST https://cafe-pos-inky-zeta.vercel.app/api/setup \
+  -H "x-setup-secret: YOUR_SETUP_SECRET"
+```
+
+## Login
 
 - `admin@whatthefood.local` / `password123`
+
+## Local vs production Prisma
+
+- **Vercel / production:** `prisma/schema.prisma` → PostgreSQL (`npm run build`)
+- **Local without Docker:** `npm run dev` uses `prisma/schema.sqlite.prisma` + `file:./dev.db`
