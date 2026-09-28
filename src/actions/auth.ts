@@ -1,7 +1,11 @@
 "use server";
 
 import { AuthError } from "next-auth";
-import { signIn } from "@/lib/auth";
+import { signIn, signOut } from "@/lib/auth";
+
+export async function signOutAction() {
+  await signOut({ redirectTo: "/login" });
+}
 
 export type LoginResult = { ok: false; error: string };
 
