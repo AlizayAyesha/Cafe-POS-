@@ -1,21 +1,39 @@
 # Production deployment checklist
 
-## Before deploy
+## Why Vercel was broken
 
-- [ ] Change all seed user passwords (or recreate staff accounts)
-- [ ] Generate strong `AUTH_SECRET` (`openssl rand -base64 32`)
-- [ ] Provision Postgres (Neon recommended for Vercel)
-- [ ] Set `provider = "postgresql"` in `prisma/schema.prisma`
-- [ ] Set `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL` in Vercel
-- [ ] Run `prisma db push` + seed (or migrate) on production DB
-- [ ] Verify Admin / Supervisor / Cashier login
-- [ ] Complete one POS sale with split tender + receipt
-- [ ] Confirm inventory decrements after sale
-- [ ] Attach custom domain in Vercel (HTTPS automatic)
+1. **SQLite cannot run on Vercel** — need PostgreSQL (`DATABASE_URL`).
+2. **Auth needs secrets** — without `AUTH_SECRET` + `AUTH_URL` you get
+   “There is a problem with the server configuration.”
 
-## After launch
+## Vercel → Settings → Environment Variables
 
-- [ ] Train cashiers with `docs/TRAINING.md`
-- [ ] Monitor Vercel logs for errors
-- [ ] Keep Neon automated backups enabled
-- [ ] 30-day warranty window starts at client sign-off
+Add these for **Production** (and Preview if you use it):
+
+| Name | Value |
+|------|--------|
+| `DATABASE_URL` | Your Neon/Postgres URL ending with `?sslmode=require` |
+| `AUTH_SECRET` | Output of `openssl rand -base64 32` |
+| `NEXTAUTH_SECRET` | **Same** as `AUTH_SECRET` |
+| `AUTH_URL` | `https://YOUR-APP.vercel.app` (no trailing slash) |
+| `NEXTAUTH_URL` | **Same** as `AUTH_URL` |
+
+Do **not** set `DATABASE_URL` to `file:./dev.db` on Vercel.
+
+## One-time database setup
+
+1. Create a free DB at [neon.tech](https://neon.tech) → copy connection string.
+2. Paste it as `DATABASE_URL` on Vercel.
+3. From your laptop (schema is PostgreSQL):
+
+```bash
+export DATABASE_URL="postgresql://...neon.../neondb?sslmode=require"
+npx prisma db push
+npm run db:seed
+```
+
+4. Redeploy on Vercel (Deployments → … → Redeploy).
+
+## Login after seed
+
+- `admin@whatthefood.local` / `password123`
