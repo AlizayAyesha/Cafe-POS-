@@ -8,6 +8,8 @@ export const authConfig = {
     signIn: "/login",
   },
   session: { strategy: "jwt" },
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  trustHost: true,
   callbacks: {
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
@@ -33,5 +35,4 @@ export const authConfig = {
       return session;
     },
   },
-  trustHost: true,
 } satisfies NextAuthConfig;
