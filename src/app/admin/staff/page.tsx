@@ -13,7 +13,7 @@ export default async function StaffPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Staff & pay</h1>
+        <h1 className="text-xl font-bold sm:text-2xl tracking-tight">Staff & pay</h1>
         <p className="text-sm text-[var(--muted)]">
           Logins and roles. See each cashier&apos;s cash vs card on Cash drawer during a shift.
           Record salary notes in staff notes for now — full payroll module can come later.

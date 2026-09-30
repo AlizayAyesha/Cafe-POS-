@@ -3,7 +3,7 @@ import { LoginForm } from "@/components/login-form";
 
 export default function LoginPage() {
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
+    <main className="relative flex min-h-dvh items-center justify-center overflow-x-hidden px-4 py-8 sm:px-6">
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -11,7 +11,7 @@ export default function LoginPage() {
             "radial-gradient(ellipse at top right, #bbf7d0aa, transparent 55%), radial-gradient(ellipse at bottom left, #dcfce7, transparent 50%), linear-gradient(165deg, #f4faf6, #e8f5ee)",
         }}
       />
-      <div className="relative w-full max-w-md rounded-2xl border border-[var(--line)] bg-white/95 p-8 shadow-sm backdrop-blur">
+      <div className="relative w-full max-w-md rounded-2xl border border-[var(--line)] bg-white/95 p-5 shadow-sm backdrop-blur sm:p-8">
         <p
           className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]"
           style={{ fontFamily: "var(--font-accent), serif" }}
@@ -19,7 +19,7 @@ export default function LoginPage() {
           Café POS
         </p>
         <h1
-          className="mt-2 text-3xl font-bold tracking-tight text-[var(--ink)]"
+          className="mt-2 text-2xl font-bold tracking-tight text-[var(--ink)] sm:text-3xl"
           style={{ fontFamily: "var(--font-accent), serif" }}
         >
           What The Food
@@ -32,7 +32,7 @@ export default function LoginPage() {
             <LoginForm />
           </Suspense>
         </div>
-        <p className="mt-6 text-xs text-[var(--muted)]">
+        <p className="mt-6 break-all text-xs text-[var(--muted)]">
           Admin: admin@whatthefood.local · password123
         </p>
       </div>

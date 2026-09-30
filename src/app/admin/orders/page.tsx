@@ -23,7 +23,7 @@ export default async function OrdersPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Orders</h1>
+        <h1 className="text-xl font-bold sm:text-2xl tracking-tight">Orders</h1>
         <p className="text-sm text-[var(--muted)]">
           Paid sales start as <strong>In process</strong> — mark Delivered, then Complete
           when handed to the guest

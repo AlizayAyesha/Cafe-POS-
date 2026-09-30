@@ -90,7 +90,7 @@ export default async function RegisterPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Cash drawer</h1>
+        <h1 className="text-xl font-bold sm:text-2xl tracking-tight">Cash drawer</h1>
         <p className="text-sm text-[var(--muted)] max-w-2xl">
           Tracks physical cash only. Card / JazzCash stay in payment records — they do not
           enter the drawer. At close: count notes & coins, compare to expected, see variance.

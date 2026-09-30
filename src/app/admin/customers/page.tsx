@@ -11,7 +11,7 @@ export default async function CustomersPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Customers</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">Customers</h1>
         <p className="text-sm text-stone-600">
           Customer database (OSPOS-style) — attach to POS sales
         </p>

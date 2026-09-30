@@ -21,7 +21,7 @@ export default async function AnalyticsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
+        <h1 className="text-xl font-bold sm:text-2xl tracking-tight">Analytics</h1>
         <p className="text-sm text-[var(--muted)]">
           What sells, what sits, and when you are busiest
         </p>

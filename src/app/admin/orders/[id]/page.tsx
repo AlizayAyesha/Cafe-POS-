@@ -29,7 +29,7 @@ export default async function OrderDetailPage({
         ← Orders
       </Link>
       <div>
-        <h1 className="text-2xl font-bold">{order.orderNumber}</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">{order.orderNumber}</h1>
         <p className="text-sm text-[var(--muted)]">
           {order.createdAt.toLocaleString()} · {order.createdBy.name} · paid ·{" "}
           {order.orderType.replace("_", "-")}

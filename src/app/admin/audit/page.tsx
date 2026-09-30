@@ -6,7 +6,7 @@ export default async function AuditPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Activity log</h1>
+        <h1 className="text-xl font-bold sm:text-2xl tracking-tight">Activity log</h1>
         <p className="text-sm text-[var(--muted)]">
           Who changed prices, voided sales, opened the drawer, or adjusted stock — for when money
           or inventory doesn&apos;t match

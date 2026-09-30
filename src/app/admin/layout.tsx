@@ -14,13 +14,15 @@ export default async function AdminLayout({
   if (!canAccessAdmin(session.user.role)) redirect("/pos");
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-dvh flex-col md:flex-row">
       <AdminNav
         role={session.user.role}
         name={session.user.name || "Staff"}
         signOutAction={signOutAction}
       />
-      <main className="flex-1 overflow-auto p-4 md:p-8">{children}</main>
+      <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-4 md:p-8">
+        {children}
+      </main>
     </div>
   );
 }

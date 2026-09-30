@@ -109,8 +109,10 @@ export function PosClient({
   } | null>(null);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
+  const [mobilePanel, setMobilePanel] = useState<"menu" | "cart">("menu");
 
   const money = (n: number) => formatMoney(n, settings.currencySymbol);
+  const cartCount = cart.reduce((s, l) => s + l.quantity, 0);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -181,6 +183,7 @@ export function PosClient({
     setOrderNotes(h.notes || "");
     setCustomerId(h.customerId || "");
     setError("");
+    setMobilePanel("cart");
   }
 
   function fillRemaining(index: number) {
@@ -312,8 +315,8 @@ export function PosClient({
 
   if (!register) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-stone-100 p-6">
-        <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+      <div className="flex min-h-dvh flex-col items-center justify-center bg-stone-100 p-4 sm:p-6">
+        <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-6">
           <h1 className="text-xl font-bold">{settings.cafeName}</h1>
           <p className="mt-1 text-sm text-stone-600">
             Open cash register to start selling (OSPOS-style cash up)
@@ -322,9 +325,10 @@ export function PosClient({
             Opening float ({settings.currencySymbol})
             <input
               type="number"
+              inputMode="decimal"
               value={floatInput}
               onChange={(e) => setFloatInput(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2"
+              className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-3"
             />
           </label>
           {error && <p className="mt-2 text-sm text-red-700">{error}</p>}
@@ -354,14 +358,14 @@ export function PosClient({
   }
 
   return (
-    <div className="flex h-screen flex-col bg-[var(--bg)]">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--line)] bg-[var(--sidebar)] px-4 py-3 text-white">
-        <div>
+    <div className="flex h-dvh flex-col overflow-hidden bg-[var(--bg)]">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-[var(--line)] bg-[var(--sidebar)] px-3 py-2.5 text-white sm:px-4 sm:py-3">
+        <div className="min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-300">
             {settings.cafeName}
           </p>
-          <p className="text-sm text-emerald-100/70">
-            POS · {staffName} · Register open (float {money(register.openingFloat)})
+          <p className="truncate text-xs text-emerald-100/70 sm:text-sm">
+            POS · {staffName} · Float {money(register.openingFloat)}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -369,10 +373,11 @@ export function PosClient({
             <div className="flex items-center gap-1">
               <input
                 type="number"
-                placeholder="Counted cash"
+                inputMode="decimal"
+                placeholder="Counted"
                 value={closeCount}
                 onChange={(e) => setCloseCount(e.target.value)}
-                className="w-28 rounded-lg border-0 bg-white/10 px-2 py-2 text-sm text-white placeholder:text-stone-400"
+                className="w-24 rounded-lg border-0 bg-white/10 px-2 py-2 text-sm text-white placeholder:text-stone-400 sm:w-28"
               />
               <button
                 type="button"
@@ -386,7 +391,7 @@ export function PosClient({
           {showAdminLink && (
             <Link
               href="/admin"
-              className="touch-btn rounded-lg bg-white/10 px-4 py-2 text-sm hover:bg-white/15"
+              className="touch-btn rounded-lg bg-white/10 px-3 py-2 text-sm hover:bg-white/15 sm:px-4"
             >
               Admin
             </Link>
@@ -394,7 +399,7 @@ export function PosClient({
           <form action={signOutAction}>
             <button
               type="submit"
-              className="touch-btn rounded-lg bg-white/10 px-4 py-2 text-sm hover:bg-white/15"
+              className="touch-btn rounded-lg bg-white/10 px-3 py-2 text-sm hover:bg-white/15 sm:px-4"
             >
               Sign out
             </button>
@@ -403,7 +408,11 @@ export function PosClient({
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <section className="flex min-h-0 flex-1 flex-col p-3 md:p-4">
+        <section
+          className={`min-h-0 flex-1 flex-col p-3 md:p-4 ${
+            mobilePanel === "menu" ? "flex" : "hidden"
+          } lg:flex`}
+        >
           <div className="mb-3 flex flex-col gap-2 sm:flex-row">
             <input
               value={search}
@@ -413,7 +422,7 @@ export function PosClient({
             />
           </div>
           {heldOrders.length > 0 && (
-            <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+            <div className="scroll-x-touch mb-3 flex gap-2 pb-1">
               {heldOrders.map((h) => (
                 <button
                   key={h.id}
@@ -427,7 +436,7 @@ export function PosClient({
               ))}
             </div>
           )}
-          <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+          <div className="scroll-x-touch mb-3 flex gap-2 pb-1">
             <button
               type="button"
               onClick={() => setCategoryId("all")}
@@ -454,13 +463,13 @@ export function PosClient({
               </button>
             ))}
           </div>
-          <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3 xl:grid-cols-4">
+          <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 overflow-y-auto overscroll-contain pb-20 sm:grid-cols-3 lg:pb-0 xl:grid-cols-4">
             {filtered.map((p) => (
               <button
                 key={p.id}
                 type="button"
                 onClick={() => addProduct(p)}
-                className="flex min-h-[120px] flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-white text-left shadow-sm active:scale-[0.98] hover:border-[var(--accent)]"
+                className="flex min-h-[110px] flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-white text-left shadow-sm active:scale-[0.98] hover:border-[var(--accent)] sm:min-h-[120px]"
               >
                 <div className="aspect-[5/3] w-full bg-[var(--accent-soft)]">
                   {p.imageUrl ? (
@@ -476,11 +485,11 @@ export function PosClient({
                     </div>
                   )}
                 </div>
-                <div className="flex flex-1 flex-col p-3">
-                  <span className="font-semibold text-[var(--ink)] leading-snug">
+                <div className="flex flex-1 flex-col p-2.5 sm:p-3">
+                  <span className="text-sm font-semibold leading-snug text-[var(--ink)] sm:text-base">
                     {p.name}
                   </span>
-                  <span className="mt-auto pt-2 text-lg font-bold text-[var(--accent)]">
+                  <span className="mt-auto pt-2 text-base font-bold text-[var(--accent)] sm:text-lg">
                     {money(p.price)}
                   </span>
                 </div>
@@ -489,8 +498,14 @@ export function PosClient({
           </div>
         </section>
 
-        <aside className="flex w-full flex-col border-t border-stone-200 bg-white lg:w-[400px] lg:border-l lg:border-t-0">
-          <div className="border-b border-stone-100 px-4 py-3">
+        <aside
+          className={`min-h-0 w-full flex-col border-stone-200 bg-white lg:flex lg:w-[min(400px,42vw)] lg:border-l ${
+            mobilePanel === "cart"
+              ? "flex flex-1 border-t-0"
+              : "hidden border-t lg:border-t-0"
+          }`}
+        >
+          <div className="shrink-0 border-b border-stone-100 px-4 py-3">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">
                 Current order {heldOrderId ? "(held)" : ""}
@@ -498,18 +513,18 @@ export function PosClient({
               <button
                 type="button"
                 onClick={clearOrder}
-                className="text-sm text-stone-500 hover:text-red-700"
+                className="touch-btn px-2 text-sm text-stone-500 hover:text-red-700"
               >
                 Clear
               </button>
             </div>
-            <div className="mt-2 flex gap-1">
+            <div className="mt-2 flex flex-wrap gap-1">
               {(["TAKEAWAY", "DINE_IN", "DELIVERY"] as OrderType[]).map((t) => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => setOrderType(t)}
-                  className={`rounded-lg px-2 py-1 text-xs font-medium ${
+                  className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${
                     orderType === t ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-600"
                   }`}
                 >
@@ -518,7 +533,7 @@ export function PosClient({
               ))}
             </div>
           </div>
-          <div className="flex-1 space-y-2 overflow-y-auto p-4">
+          <div className="flex-1 space-y-2 overflow-y-auto overscroll-contain p-4">
             {cart.length === 0 && (
               <p className="text-sm text-stone-500">Tap products to add them</p>
             )}
@@ -564,11 +579,11 @@ export function PosClient({
             ))}
           </div>
 
-          <div className="space-y-3 border-t border-stone-100 p-4">
+          <div className="shrink-0 space-y-3 border-t border-stone-100 p-4 pb-[max(5.5rem,calc(env(safe-area-inset-bottom)+4.5rem))] lg:pb-4">
             <select
               value={customerId}
               onChange={(e) => setCustomerId(e.target.value)}
-              className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-stone-200 px-3 py-3 text-sm"
             >
               <option value="">Walk-in customer</option>
               {customers.map((c) => (
@@ -792,7 +807,10 @@ export function PosClient({
               <button
                 type="button"
                 disabled={pending || cart.length === 0}
-                onClick={() => runSale(true)}
+                onClick={() => {
+                  setMobilePanel("menu");
+                  runSale(true);
+                }}
                 className="touch-btn rounded-xl border border-stone-300 py-3 text-sm font-semibold disabled:opacity-50"
               >
                 Hold
@@ -800,7 +818,10 @@ export function PosClient({
               <button
                 type="button"
                 disabled={pending || cart.length === 0}
-                onClick={() => runSale(false)}
+                onClick={() => {
+                  setMobilePanel("menu");
+                  runSale(false);
+                }}
                 className="touch-btn rounded-xl bg-[var(--accent)] py-3 text-sm font-semibold text-white hover:bg-[var(--accent-dark)] disabled:opacity-50"
               >
                 {pending ? "…" : "Complete"}
@@ -824,6 +845,37 @@ export function PosClient({
           </div>
         </aside>
       </div>
+
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-[var(--line)] bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgb(15_31_22_/8%)] lg:hidden">
+        <button
+          type="button"
+          onClick={() => setMobilePanel("menu")}
+          className={`touch-btn flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-xs font-semibold ${
+            mobilePanel === "menu" ? "text-[var(--accent)]" : "text-stone-500"
+          }`}
+        >
+          Menu
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobilePanel("cart")}
+          className={`touch-btn relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-xs font-semibold ${
+            mobilePanel === "cart" ? "text-[var(--accent)]" : "text-stone-500"
+          }`}
+        >
+          <span className="flex items-center gap-1.5">
+            Cart
+            {cartCount > 0 && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] text-white">
+                {cartCount}
+              </span>
+            )}
+          </span>
+          {cartCount > 0 && (
+            <span className="text-[10px] font-normal text-stone-500">{money(total)}</span>
+          )}
+        </button>
+      </nav>
 
       {lastReceipt && (
         <div id="receipt-print" className="hidden p-4 text-sm print:block">

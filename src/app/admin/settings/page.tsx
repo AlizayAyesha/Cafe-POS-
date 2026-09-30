@@ -7,7 +7,7 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Café settings</h1>
+        <h1 className="text-xl font-bold sm:text-2xl tracking-tight">Café settings</h1>
         <p className="text-sm text-[var(--muted)]">
           Name on receipts, address, and currency shown on POS
         </p>

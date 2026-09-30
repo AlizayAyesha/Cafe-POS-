@@ -19,7 +19,7 @@ export default async function GiftCardsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Gift cards</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">Gift cards</h1>
         <p className="text-sm text-stone-600">
           Prepaid balances for repeat customers — issue, reload, redeem on POS
         </p>

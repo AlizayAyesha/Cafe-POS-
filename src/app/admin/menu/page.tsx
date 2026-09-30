@@ -34,7 +34,7 @@ export default async function MenuPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Menu</h1>
+        <h1 className="text-xl font-bold sm:text-2xl tracking-tight">Menu</h1>
         <p className="text-sm text-[var(--muted)]">
           Categories and items in one place — add photos for POS
         </p>

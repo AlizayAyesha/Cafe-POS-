@@ -20,7 +20,7 @@ export default async function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Dashboard</h1>
+        <h1 className="text-xl font-bold sm:text-2xl text-stone-900">Dashboard</h1>
         <p className="text-sm text-stone-600">
           {settings.cafeName} · operational overview
         </p>
@@ -35,7 +35,7 @@ export default async function AdminDashboardPage() {
             <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
               {c.label}
             </p>
-            <p className="mt-2 text-2xl font-bold text-stone-900">{c.value}</p>
+            <p className="mt-2 text-xl font-bold sm:text-2xl text-stone-900">{c.value}</p>
           </div>
         ))}
       </div>
