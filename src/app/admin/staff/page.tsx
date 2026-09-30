@@ -13,7 +13,7 @@ export default async function StaffPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold sm:text-2xl tracking-tight">Staff & pay</h1>
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Staff & pay</h1>
         <p className="text-sm text-[var(--muted)]">
           Logins and roles. See each cashier&apos;s cash vs card on Cash drawer during a shift.
           Record salary notes in staff notes for now — full payroll module can come later.
@@ -22,8 +22,32 @@ export default async function StaffPage({
 
       <StaffForm staff={editing} />
 
-      <div className="overflow-x-auto rounded-2xl border border-stone-200 bg-white shadow-sm">
-        <table className="w-full min-w-[560px] text-left text-sm">
+      {/* Mobile cards */}
+      <div className="space-y-3 md:hidden">
+        {staff.map((s) => (
+          <div
+            key={s.id}
+            className="flex items-start justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm"
+          >
+            <div className="min-w-0">
+              <p className="font-semibold">{s.name}</p>
+              <p className="break-all text-sm text-stone-600">{s.email}</p>
+              <p className="mt-1 text-xs text-stone-500">
+                {s.role} · {s.active ? "Active" : "Disabled"}
+              </p>
+            </div>
+            <a
+              href={`/admin/staff?edit=${s.id}`}
+              className="touch-btn shrink-0 rounded-lg bg-[var(--accent-soft)] px-3 py-2 text-sm font-medium text-[var(--accent)]"
+            >
+              Edit
+            </a>
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-2xl border border-stone-200 bg-white shadow-sm md:block">
+        <table className="w-full text-left text-sm">
           <thead className="border-b border-stone-100 bg-stone-50 text-stone-500">
             <tr>
               <th className="px-4 py-3 font-medium">Name</th>

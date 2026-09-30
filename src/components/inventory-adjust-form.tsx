@@ -39,13 +39,13 @@ export function InventoryAdjustForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="grid gap-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm md:grid-cols-4"
+      className="grid gap-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:grid-cols-2 sm:p-5 lg:grid-cols-4"
     >
-      <h2 className="md:col-span-4 font-semibold">Stock adjustment</h2>
+      <h2 className="font-semibold sm:col-span-2 lg:col-span-4">Stock adjustment</h2>
       <select
         name="itemId"
         required
-        className="rounded-lg border border-stone-300 px-3 py-2 text-sm"
+        className="w-full min-w-0 rounded-lg border border-stone-300 px-3 py-2.5 text-sm"
       >
         <option value="">Select item</option>
         {items.map((i) => (
@@ -56,7 +56,7 @@ export function InventoryAdjustForm({
       </select>
       <select
         name="type"
-        className="rounded-lg border border-stone-300 px-3 py-2 text-sm"
+        className="w-full min-w-0 rounded-lg border border-stone-300 px-3 py-2.5 text-sm"
       >
         <option value="ADD">Add stock</option>
         <option value="REDUCE">Reduce stock</option>
@@ -69,28 +69,28 @@ export function InventoryAdjustForm({
         min="0"
         defaultValue={1}
         placeholder="Qty change"
-        className="rounded-lg border border-stone-300 px-3 py-2 text-sm"
+        className="w-full min-w-0 rounded-lg border border-stone-300 px-3 py-2.5 text-sm"
       />
       <input
         name="newQuantity"
         type="number"
         step="0.001"
         placeholder="New qty (adjust)"
-        className="rounded-lg border border-stone-300 px-3 py-2 text-sm"
+        className="w-full min-w-0 rounded-lg border border-stone-300 px-3 py-2.5 text-sm"
       />
       <input
         name="reason"
         placeholder="Reason / note"
-        className="md:col-span-3 rounded-lg border border-stone-300 px-3 py-2 text-sm"
+        className="w-full min-w-0 rounded-lg border border-stone-300 px-3 py-2.5 text-sm sm:col-span-2 lg:col-span-3"
       />
       <button
         type="submit"
         disabled={pending}
-        className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+        className="touch-btn w-full rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60"
       >
         {pending ? "Saving…" : "Apply"}
       </button>
-      {error && <p className="md:col-span-4 text-sm text-red-700">{error}</p>}
+      {error && <p className="text-sm text-red-700 sm:col-span-2 lg:col-span-4">{error}</p>}
     </form>
   );
 }

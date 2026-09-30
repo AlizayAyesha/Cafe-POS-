@@ -23,33 +23,35 @@ export default async function OrdersPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold sm:text-2xl tracking-tight">Orders</h1>
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Orders</h1>
         <p className="text-sm text-[var(--muted)]">
           Paid sales start as <strong>In process</strong> — mark Delivered, then Complete
           when handed to the guest
         </p>
       </div>
 
-      <form className="card-surface flex flex-wrap gap-2 p-4">
+      <form className="card-surface flex flex-col gap-2 p-3 sm:flex-row sm:flex-wrap sm:p-4">
         <input
           name="q"
           defaultValue={sp.q || ""}
           placeholder="Order #, staff, notes"
-          className="min-w-[180px] flex-1 rounded-lg border border-[var(--line)] px-3 py-2 text-sm"
+          className="w-full min-w-0 flex-1 rounded-lg border border-[var(--line)] px-3 py-2.5 text-sm sm:min-w-[180px]"
         />
-        <input
-          name="from"
-          type="date"
-          defaultValue={sp.from || ""}
-          className="rounded-lg border border-[var(--line)] px-3 py-2 text-sm"
-        />
-        <input
-          name="to"
-          type="date"
-          defaultValue={sp.to || ""}
-          className="rounded-lg border border-[var(--line)] px-3 py-2 text-sm"
-        />
-        <button type="submit" className="btn-primary px-4 py-2 text-sm">
+        <div className="flex gap-2">
+          <input
+            name="from"
+            type="date"
+            defaultValue={sp.from || ""}
+            className="min-w-0 flex-1 rounded-lg border border-[var(--line)] px-3 py-2.5 text-sm sm:w-auto sm:flex-none"
+          />
+          <input
+            name="to"
+            type="date"
+            defaultValue={sp.to || ""}
+            className="min-w-0 flex-1 rounded-lg border border-[var(--line)] px-3 py-2.5 text-sm sm:w-auto sm:flex-none"
+          />
+        </div>
+        <button type="submit" className="btn-primary touch-btn w-full px-4 py-2.5 text-sm sm:w-auto">
           Filter
         </button>
       </form>
@@ -59,33 +61,33 @@ export default async function OrdersPage({
           const paid = o.status === "COMPLETED";
           const voided = o.status === "VOIDED" || o.status === "RETURNED";
           return (
-            <div key={o.id} className="card-surface p-4">
+            <div key={o.id} className="card-surface p-3 sm:p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
+                <div className="min-w-0 flex-1">
                   <Link
                     href={`/admin/orders/${o.id}`}
                     className="font-semibold text-[var(--accent)]"
                   >
                     {o.orderNumber}
                   </Link>
-                  <p className="text-xs text-[var(--muted)] mt-0.5">
+                  <p className="mt-0.5 text-xs text-[var(--muted)]">
                     {o.createdAt.toLocaleString()} · {o.createdBy.name} ·{" "}
                     {o.orderType.replace("_", " ")}
                   </p>
-                  <p className="text-sm mt-2">
+                  <p className="mt-2 break-words text-sm leading-snug">
                     {o.items
                       .map((i) => `${i.quantity}× ${i.productName}`)
                       .join(", ")}
                   </p>
-                  <p className="text-xs text-[var(--muted)] mt-1">
+                  <p className="mt-1 break-words text-xs text-[var(--muted)]">
                     Pay:{" "}
                     {o.payments
                       .map((p) => `${p.method} ${money(toNumber(p.amount))}`)
                       .join(" + ")}
                   </p>
                 </div>
-                <div className="text-right space-y-2">
-                  <p className="text-lg font-bold">{money(toNumber(o.total))}</p>
+                <div className="shrink-0 space-y-2 text-right">
+                  <p className="text-lg font-bold tabular-nums">{money(toNumber(o.total))}</p>
                   {voided ? (
                     <span className="status-chip status-void">{o.status}</span>
                   ) : paid ? (
@@ -116,7 +118,7 @@ export default async function OrdersPage({
                     >
                       <button
                         type="submit"
-                        className={`rounded-lg px-3 py-2 text-sm font-medium border transition ${
+                        className={`touch-btn rounded-lg px-3 py-2 text-sm font-medium border transition ${
                           o.fulfillmentStatus === value
                             ? "border-[var(--accent)] bg-[var(--accent)] text-white"
                             : "border-[var(--line)] bg-white text-[var(--ink)] hover:border-[var(--accent)]"
@@ -128,7 +130,7 @@ export default async function OrdersPage({
                   ))}
                   <Link
                     href={`/admin/orders/${o.id}`}
-                    className="rounded-lg px-3 py-2 text-sm text-[var(--muted)] hover:text-[var(--accent)]"
+                    className="touch-btn rounded-lg px-3 py-2 text-sm text-[var(--muted)] hover:text-[var(--accent)]"
                   >
                     Details →
                   </Link>

@@ -161,8 +161,12 @@ export default async function RegisterPage() {
                   {openDetail.byStaff.map((s) => (
                     <li key={s.name} className="rounded-lg border border-[var(--line)] p-3">
                       <p className="font-medium">{s.name}</p>
-                      <p className="text-xs text-[var(--muted)]">
-                        Cash {money(s.cash)} · Card {money(s.card)} · Total {money(s.total)}
+                      <p className="text-xs text-[var(--muted)] leading-relaxed">
+                        <span className="block sm:inline">Cash {money(s.cash)}</span>
+                        <span className="hidden sm:inline"> · </span>
+                        <span className="block sm:inline">Card {money(s.card)}</span>
+                        <span className="hidden sm:inline"> · </span>
+                        <span className="block sm:inline">Total {money(s.total)}</span>
                       </p>
                     </li>
                   ))}
@@ -177,9 +181,9 @@ export default async function RegisterPage() {
               {openDetail.movements.map((m) => (
                 <div
                   key={m.id}
-                  className="flex justify-between gap-2 border-b border-[var(--line)] py-1.5"
+                  className="flex justify-between gap-3 border-b border-[var(--line)] py-1.5"
                 >
-                  <span>
+                  <span className="min-w-0 flex-1 break-words">
                     {m.type.replace(/_/g, " ")}
                     {m.note ? ` · ${m.note}` : ""}
                     <span className="text-[var(--muted)]">
@@ -187,7 +191,7 @@ export default async function RegisterPage() {
                       · {m.user?.name || "—"}
                     </span>
                   </span>
-                  <span className="font-medium tabular-nums">
+                  <span className="shrink-0 font-medium tabular-nums">
                     {money(toNumber(m.amount))}
                   </span>
                 </div>
@@ -219,9 +223,58 @@ export default async function RegisterPage() {
       )}
 
       <section>
-        <h2 className="font-semibold mb-3">Shift history</h2>
-        <div className="overflow-x-auto card-surface">
-          <table className="w-full min-w-[720px] text-left text-sm">
+        <h2 className="mb-3 font-semibold">Shift history</h2>
+
+        {/* Mobile cards */}
+        <div className="space-y-3 md:hidden">
+          {sessions.map((s) => (
+            <div key={s.id} className="card-surface space-y-2 p-4 text-sm">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-medium">{s.openedBy.name}</p>
+                  <p className="text-xs text-[var(--muted)]">
+                    {s.openedAt.toLocaleString()}
+                  </p>
+                </div>
+                <span
+                  className={
+                    s.status === "OPEN" ? "status-chip status-done" : "status-chip"
+                  }
+                >
+                  {s.status}
+                </span>
+              </div>
+              <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                <dt className="text-[var(--muted)]">Float</dt>
+                <dd className="text-right tabular-nums">{money(toNumber(s.openingFloat))}</dd>
+                <dt className="text-[var(--muted)]">Expected</dt>
+                <dd className="text-right tabular-nums">
+                  {s.expectedCash != null ? money(toNumber(s.expectedCash)) : "—"}
+                </dd>
+                <dt className="text-[var(--muted)]">Counted</dt>
+                <dd className="text-right tabular-nums">
+                  {s.closingCounted != null ? money(toNumber(s.closingCounted)) : "—"}
+                </dd>
+                <dt className="text-[var(--muted)]">Variance</dt>
+                <dd
+                  className={`text-right tabular-nums font-medium ${
+                    s.variance != null && toNumber(s.variance) !== 0
+                      ? "text-amber-800"
+                      : "text-emerald-700"
+                  }`}
+                >
+                  {s.variance != null ? money(toNumber(s.variance)) : "—"}
+                </dd>
+                <dt className="text-[var(--muted)]">Closed by</dt>
+                <dd className="text-right">{s.closedBy?.name || "—"}</dd>
+              </dl>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop table */}
+        <div className="card-surface hidden overflow-x-auto md:block">
+          <table className="w-full text-left text-sm">
             <thead className="border-b border-[var(--line)] bg-[var(--accent-soft)] text-[var(--muted)]">
               <tr>
                 <th className="px-4 py-3 font-medium">Opened</th>
@@ -253,8 +306,8 @@ export default async function RegisterPage() {
                       <span
                         className={
                           toNumber(s.variance) === 0
-                            ? "text-emerald-700 font-medium"
-                            : "text-amber-800 font-medium"
+                            ? "font-medium text-emerald-700"
+                            : "font-medium text-amber-800"
                         }
                       >
                         {money(toNumber(s.variance))}

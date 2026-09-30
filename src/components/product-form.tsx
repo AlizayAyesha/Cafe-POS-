@@ -166,7 +166,7 @@ export function ProductForm({
               No photo
             </div>
           )}
-          <div className="space-y-2">
+          <div className="min-w-0 flex-1 space-y-2">
             <input
               ref={fileRef}
               type="file"
@@ -178,7 +178,7 @@ export function ProductForm({
               type="button"
               disabled={uploading}
               onClick={() => fileRef.current?.click()}
-              className="btn-primary px-4 py-2 text-sm"
+              className="btn-primary touch-btn w-full px-4 py-2 text-sm sm:w-auto"
             >
               {uploading ? "Uploading…" : "Upload image"}
             </button>
@@ -188,7 +188,7 @@ export function ProductForm({
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               placeholder="Or paste image URL"
-              className="block w-full min-w-[220px] rounded-lg border border-[var(--line)] px-3 py-2 text-sm"
+              className="block w-full min-w-0 max-w-full rounded-lg border border-[var(--line)] px-3 py-2.5 text-sm"
             />
           </div>
         </div>
@@ -200,7 +200,7 @@ export function ProductForm({
           name="availableFrom"
           type="datetime-local"
           defaultValue={toLocalInput(product?.availableFrom || null)}
-          className="w-full rounded-lg border border-[var(--line)] px-3 py-2"
+          className="w-full min-w-0 max-w-full rounded-lg border border-[var(--line)] px-3 py-2.5"
         />
       </label>
       <label className="block text-sm">
@@ -209,7 +209,7 @@ export function ProductForm({
           name="availableTo"
           type="datetime-local"
           defaultValue={toLocalInput(product?.availableTo || null)}
-          className="w-full rounded-lg border border-[var(--line)] px-3 py-2"
+          className="w-full min-w-0 max-w-full rounded-lg border border-[var(--line)] px-3 py-2.5"
         />
       </label>
       <label className="block text-sm md:col-span-2">

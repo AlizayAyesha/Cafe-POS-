@@ -39,17 +39,17 @@ export default async function InventoryPage() {
             placeholder="Name"
             className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
           />
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <input
               name="sku"
               placeholder="SKU"
-              className="rounded-lg border border-stone-300 px-3 py-2 text-sm"
+              className="w-full min-w-0 rounded-lg border border-stone-300 px-3 py-2.5 text-sm"
             />
             <input
               name="unit"
               defaultValue="pcs"
               placeholder="Unit"
-              className="rounded-lg border border-stone-300 px-3 py-2 text-sm"
+              className="w-full min-w-0 rounded-lg border border-stone-300 px-3 py-2.5 text-sm"
             />
             <input
               name="quantity"
@@ -58,7 +58,7 @@ export default async function InventoryPage() {
               defaultValue={0}
               placeholder="Opening qty"
               title="Opening stock is recorded as an ADD ledger movement"
-              className="rounded-lg border border-stone-300 px-3 py-2 text-sm"
+              className="w-full min-w-0 rounded-lg border border-stone-300 px-3 py-2.5 text-sm"
             />
             <input
               name="minThreshold"
@@ -66,7 +66,7 @@ export default async function InventoryPage() {
               step="0.001"
               defaultValue={0}
               placeholder="Low stock"
-              className="rounded-lg border border-stone-300 px-3 py-2 text-sm"
+              className="w-full min-w-0 rounded-lg border border-stone-300 px-3 py-2.5 text-sm"
             />
           </div>
           <select
@@ -130,8 +130,43 @@ export default async function InventoryPage() {
         }))}
       />
 
-      <div className="overflow-x-auto rounded-2xl border border-stone-200 bg-white shadow-sm">
-        <table className="w-full min-w-[700px] text-left text-sm">
+      {/* Mobile stock cards */}
+      <div className="space-y-3 md:hidden">
+        {items.map((i) => {
+          const qty = toNumber(i.quantity);
+          const min = toNumber(i.minThreshold);
+          const low = qty <= min;
+          return (
+            <div key={i.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-semibold">{i.name}</p>
+                  <p className="text-xs text-stone-500">{i.sku || "No SKU"}</p>
+                  <p className="mt-1 text-xs text-stone-500">
+                    {i.supplier?.name || "No supplier"}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="font-bold tabular-nums">
+                    {qty} {i.unit}
+                  </p>
+                  <p className="text-xs text-stone-500">min {min}</p>
+                  {low ? (
+                    <span className="mt-1 inline-block rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-xs font-medium text-[var(--accent-dark)]">
+                      Low stock
+                    </span>
+                  ) : (
+                    <span className="mt-1 inline-block text-xs text-green-700">OK</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-2xl border border-stone-200 bg-white shadow-sm md:block">
+        <table className="w-full text-left text-sm">
           <thead className="border-b border-stone-100 bg-stone-50 text-stone-500">
             <tr>
               <th className="px-4 py-3 font-medium">Item</th>
@@ -173,7 +208,7 @@ export default async function InventoryPage() {
         </table>
       </div>
 
-      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-5">
         <h2 className="mb-4 font-semibold">Inventory history</h2>
         <div className="max-h-80 space-y-2 overflow-y-auto text-sm">
           {history.map((h) => (
@@ -181,11 +216,11 @@ export default async function InventoryPage() {
               key={h.id}
               className="flex flex-wrap justify-between gap-2 border-b border-stone-50 py-2"
             >
-              <span>
+              <span className="min-w-0 flex-1 break-words">
                 <strong>{h.item.name}</strong> · {h.type} · {toNumber(h.quantity)}
                 {h.reason ? ` · ${h.reason}` : ""}
               </span>
-              <span className="text-stone-500">
+              <span className="shrink-0 text-xs text-stone-500 sm:text-sm">
                 {h.user?.name || "System"} · {h.createdAt.toLocaleString()}
               </span>
             </div>

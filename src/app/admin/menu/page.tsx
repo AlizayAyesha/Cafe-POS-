@@ -40,22 +40,22 @@ export default async function MenuPage({
         </p>
       </div>
 
-      <section className="card-surface p-5">
-        <h2 className="font-semibold mb-3">Categories</h2>
+      <section className="card-surface p-4 sm:p-5">
+        <h2 className="mb-3 font-semibold">Categories</h2>
         <form
           action={async (fd) => {
             "use server";
             await upsertCategory(fd);
           }}
-          className="flex flex-wrap gap-2 mb-4"
+          className="mb-4 flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap"
         >
           <input
             name="name"
             required
             placeholder="New category name"
-            className="rounded-lg border border-[var(--line)] px-3 py-2 text-sm"
+            className="min-w-0 w-full flex-1 rounded-lg border border-[var(--line)] px-3 py-2.5 text-sm"
           />
-          <button type="submit" className="btn-primary px-4 py-2 text-sm">
+          <button type="submit" className="btn-primary touch-btn w-full px-4 py-2.5 text-sm sm:w-auto">
             Add category
           </button>
         </form>
@@ -101,11 +101,11 @@ export default async function MenuPage({
             </div>
             <div className="p-4 space-y-2">
               <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="font-semibold">{p.name}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold break-words">{p.name}</p>
                   <p className="text-xs text-[var(--muted)]">{p.category.name}</p>
                 </div>
-                <p className="font-bold text-[var(--accent)]">
+                <p className="shrink-0 font-bold tabular-nums text-[var(--accent)]">
                   {formatMoney(toNumber(p.price), settings.currencySymbol)}
                 </p>
               </div>

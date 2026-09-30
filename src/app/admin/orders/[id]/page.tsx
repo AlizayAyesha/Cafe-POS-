@@ -79,43 +79,43 @@ export default async function OrderDetailPage({
           ))}
         </div>
       )}
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-5">
         <ul className="space-y-2 text-sm">
           {order.items.map((i) => (
-            <li key={i.id} className="flex justify-between gap-4">
-              <span>
+            <li key={i.id} className="flex justify-between gap-3">
+              <span className="min-w-0 flex-1 break-words">
                 {i.quantity}× {i.productName}
                 {i.notes ? ` (${i.notes})` : ""}
               </span>
-              <span>{money(toNumber(i.lineTotal))}</span>
+              <span className="shrink-0 tabular-nums">{money(toNumber(i.lineTotal))}</span>
             </li>
           ))}
         </ul>
         <hr className="my-4" />
-        <div className="flex justify-between text-sm text-stone-600">
+        <div className="flex justify-between gap-3 text-sm text-stone-600">
           <span>Subtotal</span>
-          <span>{money(toNumber(order.subtotal))}</span>
+          <span className="shrink-0 tabular-nums">{money(toNumber(order.subtotal))}</span>
         </div>
         {toNumber(order.discountAmount) > 0 && (
-          <div className="flex justify-between text-sm text-green-700">
+          <div className="flex justify-between gap-3 text-sm text-green-700">
             <span>Discount</span>
-            <span>−{money(toNumber(order.discountAmount))}</span>
+            <span className="shrink-0 tabular-nums">−{money(toNumber(order.discountAmount))}</span>
           </div>
         )}
-        <div className="mt-1 flex justify-between font-bold">
+        <div className="mt-1 flex justify-between gap-3 font-bold">
           <span>Total</span>
-          <span>{money(toNumber(order.total))}</span>
+          <span className="shrink-0 tabular-nums">{money(toNumber(order.total))}</span>
         </div>
         <div className="mt-3 space-y-1 text-sm text-stone-600">
           {order.payments.map((p) => (
-            <div key={p.id} className="flex justify-between">
-              <span>{p.method}</span>
-              <span>{money(toNumber(p.amount))}</span>
+            <div key={p.id} className="flex justify-between gap-3">
+              <span className="min-w-0">{p.method}</span>
+              <span className="shrink-0 tabular-nums">{money(toNumber(p.amount))}</span>
             </div>
           ))}
         </div>
         {order.notes && (
-          <p className="mt-4 text-sm text-stone-600">Notes: {order.notes}</p>
+          <p className="mt-4 break-words text-sm text-stone-600">Notes: {order.notes}</p>
         )}
         {order.voidReason && (
           <p className="mt-2 text-sm text-red-700">

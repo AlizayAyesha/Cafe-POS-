@@ -18,7 +18,7 @@ export default async function SettingsPage() {
           "use server";
           await updateSettingsAction(fd);
         }}
-        className="card-surface space-y-4 p-5"
+        className="card-surface space-y-4 p-4 sm:p-5"
       >
         <label className="block text-sm">
           <span className="mb-1 block text-[var(--muted)]">Café name (receipts & header)</span>
@@ -26,7 +26,7 @@ export default async function SettingsPage() {
             name="cafeName"
             defaultValue={settings.cafeName}
             required
-            className="w-full rounded-lg border border-[var(--line)] px-3 py-2"
+            className="w-full min-w-0 rounded-lg border border-[var(--line)] px-3 py-2.5"
           />
         </label>
         <label className="block text-sm">
@@ -34,16 +34,16 @@ export default async function SettingsPage() {
           <input
             name="address"
             defaultValue={settings.address}
-            className="w-full rounded-lg border border-[var(--line)] px-3 py-2"
+            className="w-full min-w-0 rounded-lg border border-[var(--line)] px-3 py-2.5"
           />
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="block text-sm">
             <span className="mb-1 block text-[var(--muted)]">Currency</span>
             <input
               name="currency"
               defaultValue={settings.currency}
-              className="w-full rounded-lg border border-[var(--line)] px-3 py-2"
+              className="w-full min-w-0 rounded-lg border border-[var(--line)] px-3 py-2.5"
             />
           </label>
           <label className="block text-sm">
@@ -51,7 +51,7 @@ export default async function SettingsPage() {
             <input
               name="currencySymbol"
               defaultValue={settings.currencySymbol}
-              className="w-full rounded-lg border border-[var(--line)] px-3 py-2"
+              className="w-full min-w-0 rounded-lg border border-[var(--line)] px-3 py-2.5"
             />
           </label>
         </div>
@@ -61,10 +61,10 @@ export default async function SettingsPage() {
             name="receiptFooter"
             rows={3}
             defaultValue={settings.receiptFooter}
-            className="w-full rounded-lg border border-[var(--line)] px-3 py-2"
+            className="w-full min-w-0 rounded-lg border border-[var(--line)] px-3 py-2.5"
           />
         </label>
-        <button type="submit" className="btn-primary px-5 py-2.5">
+        <button type="submit" className="btn-primary touch-btn w-full px-5 py-2.5 sm:w-auto">
           Save
         </button>
       </form>

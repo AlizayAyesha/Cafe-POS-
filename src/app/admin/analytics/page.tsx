@@ -34,10 +34,12 @@ export default async function AnalyticsPage() {
           <ul className="space-y-3">
             {top.map((row) => (
               <li key={row.product}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="font-medium truncate pr-2">{row.product}</span>
-                  <span className="shrink-0 text-[var(--muted)]">
-                    {row.qty} · {money(row.revenue)}
+                <div className="mb-1 flex justify-between gap-3 text-sm">
+                  <span className="min-w-0 flex-1 truncate pr-2 font-medium">{row.product}</span>
+                  <span className="shrink-0 text-right text-[var(--muted)]">
+                    <span className="block sm:inline">{row.qty}</span>
+                    <span className="hidden sm:inline"> · </span>
+                    <span className="block sm:inline">{money(row.revenue)}</span>
                   </span>
                 </div>
                 <div className="h-2 rounded-full bg-[var(--accent-soft)] overflow-hidden">
@@ -62,10 +64,12 @@ export default async function AnalyticsPage() {
           <ul className="space-y-3">
             {low.map((row) => (
               <li key={`low-${row.product}`}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="font-medium truncate pr-2">{row.product}</span>
-                  <span className="shrink-0 text-[var(--muted)]">
-                    {row.qty} sold · {money(row.revenue)}
+                <div className="mb-1 flex justify-between gap-3 text-sm">
+                  <span className="min-w-0 flex-1 truncate pr-2 font-medium">{row.product}</span>
+                  <span className="shrink-0 text-right text-[var(--muted)]">
+                    <span className="block sm:inline">{row.qty} sold</span>
+                    <span className="hidden sm:inline"> · </span>
+                    <span className="block sm:inline">{money(row.revenue)}</span>
                   </span>
                 </div>
                 <div className="h-2 rounded-full bg-stone-100 overflow-hidden">
@@ -88,25 +92,27 @@ export default async function AnalyticsPage() {
       <section className="card-surface p-5">
         <h2 className="font-semibold mb-1">Peak hours (14 days)</h2>
         <p className="text-xs text-[var(--muted)] mb-4">Orders by hour of day</p>
-        <div className="flex items-end gap-1 h-40">
-          {hours.map((h) => (
-            <div
-              key={h.hour}
-              className="flex-1 flex flex-col items-center justify-end h-full gap-1"
-              title={`${h.hour}:00 — ${h.orders} orders, ${money(h.revenue)}`}
-            >
+        <div className="scroll-x-touch -mx-1 px-1">
+          <div className="flex h-40 min-w-[480px] items-end gap-1">
+            {hours.map((h) => (
               <div
-                className="w-full rounded-t bg-[var(--accent)] min-h-[2px]"
-                style={{
-                  height: `${(h.orders / maxHourOrders) * 100}%`,
-                  opacity: h.orders ? 1 : 0.15,
-                }}
-              />
-              <span className="text-[9px] text-[var(--muted)]">
-                {h.hour % 3 === 0 ? h.hour : ""}
-              </span>
-            </div>
-          ))}
+                key={h.hour}
+                className="flex h-full flex-1 flex-col items-center justify-end gap-1"
+                title={`${h.hour}:00 — ${h.orders} orders, ${money(h.revenue)}`}
+              >
+                <div
+                  className="min-h-[2px] w-full rounded-t bg-[var(--accent)]"
+                  style={{
+                    height: `${(h.orders / maxHourOrders) * 100}%`,
+                    opacity: h.orders ? 1 : 0.15,
+                  }}
+                />
+                <span className="text-[9px] text-[var(--muted)]">
+                  {h.hour % 3 === 0 ? h.hour : ""}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
         {busyHours.length > 0 && (
           <p className="mt-3 text-sm text-[var(--muted)]">
