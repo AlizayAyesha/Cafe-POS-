@@ -8,6 +8,7 @@ import { prisma } from "@/core/database";
 import { completeSale, holdSale } from "@/modules/sales/application/complete-sale";
 import { voidSale, returnSale } from "@/modules/sales/application/void-return";
 import { AppError } from "@/core/errors";
+import { businessCreatedAtFilter } from "@/core/time/business-time";
 
 function actorFrom(session: { user: { id: string; role: Role } }) {
   return { id: session.user.id, role: session.user.role };
@@ -142,6 +143,7 @@ export async function listOrders(opts?: {
   limit?: number;
 }) {
   const session = await requireSession();
+  const createdAt = businessCreatedAtFilter(opts?.from, opts?.to);
   return prisma.order.findMany({
     where: {
       ...(canViewAllOrders(session.user.role)
@@ -156,14 +158,7 @@ export async function listOrders(opts?: {
             ],
           }
         : {}),
-      ...(opts?.from || opts?.to
-        ? {
-            createdAt: {
-              ...(opts.from ? { gte: new Date(opts.from) } : {}),
-              ...(opts.to ? { lte: new Date(opts.to) } : {}),
-            },
-          }
-        : {}),
+      ...(createdAt ? { createdAt } : {}),
     },
     include: {
       items: true,

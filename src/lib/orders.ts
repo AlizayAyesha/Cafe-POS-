@@ -1,4 +1,5 @@
 import type { Product } from "@prisma/client";
+import { orderNumberPrefix } from "@/core/time/business-time";
 
 /** Product is sellable now (active + within optional schedule window). */
 export function isProductAvailableNow(
@@ -11,13 +12,10 @@ export function isProductAvailableNow(
   return true;
 }
 
-export async function nextOrderNumber(): Promise<string> {
+/** New numbers use a WF + PKT-date prefix. Historical TIS numbers stay stored. */
+export async function nextOrderNumber(now = new Date()): Promise<string> {
   const { prisma } = await import("@/lib/prisma");
-  const today = new Date();
-  const y = today.getFullYear().toString().slice(-2);
-  const m = String(today.getMonth() + 1).padStart(2, "0");
-  const d = String(today.getDate()).padStart(2, "0");
-  const prefix = `TIS${y}${m}${d}`;
+  const prefix = orderNumberPrefix(now);
 
   const latest = await prisma.order.findFirst({
     where: { orderNumber: { startsWith: prefix } },

@@ -71,13 +71,13 @@ export default async function SettingsPage() {
 
       <div className="card-surface p-4 text-sm text-[var(--muted)] space-y-2">
         <p>
-          <strong className="text-[var(--ink)]">Payroll / salary:</strong> track staff on{" "}
-          <em>Staff &amp; pay</em>. Drawer cash taken by each cashier is on{" "}
-          <em>Cash drawer</em>.
+          <strong className="text-[var(--ink)]">Staff:</strong> logins and roles are on Staff.
+          This page does not store salaries.
         </p>
         <p>
-          <strong className="text-[var(--ink)]">Rollover:</strong> after cash-up, use counted
-          cash as next shift&apos;s opening float.
+          <strong className="text-[var(--ink)]">One shared drawer:</strong> the café has a
+          single cash drawer for every device. After cash-up, use the counted cash as the
+          next opening float. Card and other tenders stay on the payment record.
         </p>
       </div>
     </div>

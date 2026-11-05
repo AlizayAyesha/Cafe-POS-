@@ -1,6 +1,7 @@
 import { getProductSalesReport, getPeakHourAnalysis } from "@/actions/admin";
 import { getSettings } from "@/lib/settings";
 import { formatMoney } from "@/lib/money";
+import { BUSINESS_TIME_LABEL } from "@/core/time/business-time";
 
 export default async function AnalyticsPage() {
   const [sales, hours, settings] = await Promise.all([
@@ -23,7 +24,7 @@ export default async function AnalyticsPage() {
       <div>
         <h1 className="text-xl font-bold sm:text-2xl tracking-tight">Analytics</h1>
         <p className="text-sm text-[var(--muted)]">
-          What sells, what sits, and when you are busiest
+          What sells, what sits, and when you are busiest. Hours are {BUSINESS_TIME_LABEL}.
         </p>
       </div>
 
@@ -91,7 +92,7 @@ export default async function AnalyticsPage() {
 
       <section className="card-surface p-5">
         <h2 className="font-semibold mb-1">Peak hours (14 days)</h2>
-        <p className="text-xs text-[var(--muted)] mb-4">Orders by hour of day</p>
+          <p className="text-xs text-[var(--muted)] mb-4">Orders by hour of day (PKT)</p>
         <div className="scroll-x-touch -mx-1 px-1">
           <div className="flex h-40 min-w-[480px] items-end gap-1">
             {hours.map((h) => (

@@ -65,7 +65,7 @@ export const navAccess: { href: string; label: string; minRole: AppRole }[] = [
   { href: "/admin/inventory", label: "Stock", minRole: "SUPERVISOR" },
   { href: "/admin/customers", label: "Customers", minRole: "SUPERVISOR" },
   { href: "/admin/gift-cards", label: "Gift cards", minRole: "SUPERVISOR" },
-  { href: "/admin/staff", label: "Staff & pay", minRole: "ADMIN" },
+  { href: "/admin/staff", label: "Staff", minRole: "ADMIN" },
   { href: "/admin/audit", label: "Activity log", minRole: "ADMIN" },
   { href: "/admin/settings", label: "Café settings", minRole: "ADMIN" },
 ];

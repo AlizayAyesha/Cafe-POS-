@@ -10,7 +10,8 @@ type Actor = { id: string; role: Role };
 
 function generateGiftCode() {
   const part = () => Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `TIS-${part()}-${part()}`;
+  // New cards use a WF prefix. Codes already stored are left as they are.
+  return `WF-${part()}-${part()}`;
 }
 
 export type IssueGiftCardInput = {

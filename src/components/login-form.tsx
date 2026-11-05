@@ -16,8 +16,8 @@ function isNextRedirect(error: unknown): boolean {
 
 export function LoginForm() {
   const params = useSearchParams();
-  const [email, setEmail] = useState("admin@whatthefood.local");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
 

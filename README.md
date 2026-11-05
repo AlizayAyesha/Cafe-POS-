@@ -33,22 +33,22 @@ Money is calculated in integer **paisa**. Completing a sale, void/return, regist
 
 ## Quick start (local)
 
+Verified with Node 22 and npm 10 (`npm ci`).
+
 ```bash
 cp .env.example .env
-npm install
+# Set DEMO_SEED_PASSWORD in .env (8+ characters). It is only used to create
+# demo users that do not exist yet. It is not printed and not used in production.
+npm ci
 npm run db:setup
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). The sign-in form is blank.
 
-### Seed logins (change in production)
+`npm run db:seed` is explicit and local. It creates missing demo users and missing placeholder items. It does not deactivate the menu, overwrite café settings, or reset passwords. Do not point it at a live database. If `NODE_ENV=production`, the seed refuses to run unless `ALLOW_DEMO_SEED=true`, which is not a live-café switch.
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | `admin@whatthefood.local` | `password123` |
-| Supervisor | `supervisor@whatthefood.local` | `password123` |
-| Cashier | `cashier@whatthefood.local` | `password123` |
+Demo emails, created only when missing: `admin@whatthefood.local`, `supervisor@whatthefood.local`, `cashier@whatthefood.local`. The password is the value you set in `DEMO_SEED_PASSWORD`.
 
 ## Environment variables
 
@@ -56,7 +56,14 @@ Open [http://localhost:3000](http://localhost:3000).
 |----------|---------|
 | `DATABASE_URL` | Local: `file:./dev.db` · Production: Postgres URL |
 | `AUTH_SECRET` | `openssl rand -base64 32` |
+| `NEXTAUTH_SECRET` | Same value as `AUTH_SECRET` |
 | `AUTH_URL` | App URL (`http://localhost:3000` or production domain) |
+| `NEXTAUTH_URL` | Same value as `AUTH_URL` |
+| `DEMO_SEED_PASSWORD` | Local seed only. Creates missing demo users. Never resets an existing password. |
+| `ENABLE_INITIAL_ADMIN_SETUP` | Set to `true` only to create the first admin on an empty database |
+| `SETUP_SECRET` | Header secret for that one-time setup request |
+| `INITIAL_ADMIN_EMAIL` | Email for that first admin. Not a shared demo login. |
+| `INITIAL_ADMIN_PASSWORD` | 12+ characters. Not returned by the API. |
 
 ## Scripts
 

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { upsertProduct } from "@/actions/products";
+import { HOSTED_IMAGE_HELP } from "@/lib/product-uploads";
 
 type Category = { id: string; name: string; active: boolean };
 type InventoryItem = { id: string; name: string };
@@ -41,11 +42,13 @@ export function ProductForm({
   inventoryItems,
   product,
   redirectTo = "/admin/menu",
+  allowFileUpload = false,
 }: {
   categories: Category[];
   inventoryItems: InventoryItem[];
   product: Product | null;
   redirectTo?: string;
+  allowFileUpload?: boolean;
 }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -167,21 +170,30 @@ export function ProductForm({
             </div>
           )}
           <div className="min-w-0 flex-1 space-y-2">
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              className="hidden"
-              onChange={(e) => onPickFile(e.target.files?.[0] || null)}
-            />
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => fileRef.current?.click()}
-              className="btn-primary touch-btn w-full px-4 py-2 text-sm sm:w-auto"
-            >
-              {uploading ? "Uploading…" : "Upload image"}
-            </button>
+            {allowFileUpload && (
+              <>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  onChange={(e) => onPickFile(e.target.files?.[0] || null)}
+                />
+                <button
+                  type="button"
+                  disabled={uploading}
+                  onClick={() => fileRef.current?.click()}
+                  className="btn-primary touch-btn w-full px-4 py-2 text-sm sm:w-auto"
+                >
+                  {uploading ? "Uploading…" : "Upload image"}
+                </button>
+              </>
+            )}
+            <p className="text-xs text-[var(--muted)]">
+              {allowFileUpload
+                ? "This development server stores the file on this computer. The hosted site keeps a public image URL instead."
+                : HOSTED_IMAGE_HELP}
+            </p>
             <input
               name="imageUrl"
               type="text"

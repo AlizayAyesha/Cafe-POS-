@@ -15,6 +15,9 @@ const accent = Fraunces({
   weight: ["600", "700"],
 });
 
+/** Pages read the database per request. Builds must not query or seed it. */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "What The Food | POS",
   description: "Café POS & Management — What The Food",

@@ -6,6 +6,7 @@ import {
   upsertSupplier,
 } from "@/actions/inventory";
 import { toNumber } from "@/lib/money";
+import { formatBusinessDateTime } from "@/core/time/business-time";
 import { InventoryAdjustForm } from "@/components/inventory-adjust-form";
 
 export default async function InventoryPage() {
@@ -221,7 +222,7 @@ export default async function InventoryPage() {
                 {h.reason ? ` · ${h.reason}` : ""}
               </span>
               <span className="shrink-0 text-xs text-stone-500 sm:text-sm">
-                {h.user?.name || "System"} · {h.createdAt.toLocaleString()}
+                {h.user?.name || "System"} · {formatBusinessDateTime(h.createdAt)}
               </span>
             </div>
           ))}

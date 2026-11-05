@@ -1,6 +1,7 @@
 import { listRegisterSessions, getOpenRegister } from "@/actions/ospos";
 import { getSettings } from "@/lib/settings";
 import { formatMoney, toNumber } from "@/lib/money";
+import { formatBusinessDateTime } from "@/core/time/business-time";
 import { prisma } from "@/core/database";
 import { requireRole } from "@/lib/session";
 import { Role } from "@prisma/client";
@@ -92,9 +93,11 @@ export default async function RegisterPage() {
       <div>
         <h1 className="text-xl font-bold sm:text-2xl tracking-tight">Cash drawer</h1>
         <p className="text-sm text-[var(--muted)] max-w-2xl">
-          Tracks physical cash only. Card / JazzCash stay in payment records — they do not
-          enter the drawer. At close: count notes & coins, compare to expected, see variance.
-          Closing counted cash is your <strong>rollover float</strong> for the next open.
+          One shared drawer for the whole café. Opening or closing it applies to every
+          device signed into this POS. Tracks physical cash only. Card and other tenders
+          (including JazzCash recorded as card or other) stay in payment records — they do
+          not enter the drawer. At close: count notes and coins, compare to expected, see
+          variance. Closing counted cash is the rollover float for the next open.
         </p>
       </div>
 
@@ -106,7 +109,7 @@ export default async function RegisterPage() {
                 Current shift · OPEN
               </p>
               <p className="text-sm text-[var(--muted)]">
-                Opened {open.openedAt.toLocaleString()} by {open.openedBy.name}
+                Opened {formatBusinessDateTime(open.openedAt)} by {open.openedBy.name}
               </p>
             </div>
             <span className="status-chip status-done">Live</span>
@@ -233,7 +236,7 @@ export default async function RegisterPage() {
                 <div className="min-w-0">
                   <p className="font-medium">{s.openedBy.name}</p>
                   <p className="text-xs text-[var(--muted)]">
-                    {s.openedAt.toLocaleString()}
+                    {formatBusinessDateTime(s.openedAt)}
                   </p>
                 </div>
                 <span
@@ -290,7 +293,7 @@ export default async function RegisterPage() {
             <tbody>
               {sessions.map((s) => (
                 <tr key={s.id} className="border-b border-[var(--line)]">
-                  <td className="px-4 py-3">{s.openedAt.toLocaleString()}</td>
+                  <td className="px-4 py-3">{formatBusinessDateTime(s.openedAt)}</td>
                   <td className="px-4 py-3">{s.openedBy.name}</td>
                   <td className="px-4 py-3">{money(toNumber(s.openingFloat))}</td>
                   <td className="px-4 py-3">

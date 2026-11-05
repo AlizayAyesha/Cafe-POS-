@@ -6,6 +6,7 @@ import {
   fulfillmentChipClass,
   fulfillmentLabel,
 } from "@/modules/sales/application/fulfillment";
+import { BUSINESS_TIME_LABEL, formatBusinessDateTime } from "@/core/time/business-time";
 
 export default async function OrdersPage({
   searchParams,
@@ -26,7 +27,7 @@ export default async function OrdersPage({
         <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Orders</h1>
         <p className="text-sm text-[var(--muted)]">
           Paid sales start as <strong>In process</strong> — mark Delivered, then Complete
-          when handed to the guest
+          when handed to the guest. Date filters and times use {BUSINESS_TIME_LABEL}.
         </p>
       </div>
 
@@ -71,7 +72,7 @@ export default async function OrdersPage({
                     {o.orderNumber}
                   </Link>
                   <p className="mt-0.5 text-xs text-[var(--muted)]">
-                    {o.createdAt.toLocaleString()} · {o.createdBy.name} ·{" "}
+                    {formatBusinessDateTime(o.createdAt)} · {o.createdBy.name} ·{" "}
                     {o.orderType.replace("_", " ")}
                   </p>
                   <p className="mt-2 break-words text-sm leading-snug">

@@ -3,8 +3,20 @@ import path from "path";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { canManageCatalog } from "@/lib/permissions";
+import { HOSTED_IMAGE_HELP, localProductUploadAllowed } from "@/lib/product-uploads";
 
 export async function POST(req: Request) {
+  if (!localProductUploadAllowed()) {
+    return NextResponse.json(
+      {
+        error:
+          "File upload is not saved on the hosted site. Paste a public image URL instead. " +
+          HOSTED_IMAGE_HELP,
+      },
+      { status: 400 }
+    );
+  }
+
   const session = await auth();
   if (!session?.user || !canManageCatalog(session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

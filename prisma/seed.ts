@@ -1,232 +1,201 @@
 import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+/**
+ * Explicit local/demo seed.
+ * Importing this module does nothing. `npm run db:seed` is the only entry.
+ * It never deactivates products, overwrites settings, or resets passwords.
+ */
 
-export async function seedDatabase(client: PrismaClient = prisma) {
-  const passwordHash = await bcrypt.hash("password123", 10);
+const DEMO_USERS: { email: string; role: Role; name: string }[] = [
+  { email: "admin@whatthefood.local", role: Role.ADMIN, name: "Admin" },
+  { email: "supervisor@whatthefood.local", role: Role.SUPERVISOR, name: "Supervisor" },
+  { email: "cashier@whatthefood.local", role: Role.CASHIER, name: "Cashier" },
+];
 
-  const renames: [string, string, Role, string][] = [
-    ["admin@thisissandwich.local", "admin@whatthefood.local", Role.ADMIN, "Admin"],
-    [
-      "supervisor@thisissandwich.local",
-      "supervisor@whatthefood.local",
-      Role.SUPERVISOR,
-      "Supervisor",
-    ],
-    ["cashier@thisissandwich.local", "cashier@whatthefood.local", Role.CASHIER, "Cashier"],
-  ];
-  for (const [from, to, role, name] of renames) {
+const LEGACY_EMAILS: [string, string][] = [
+  ["admin@thisissandwich.local", "admin@whatthefood.local"],
+  ["supervisor@thisissandwich.local", "supervisor@whatthefood.local"],
+  ["cashier@thisissandwich.local", "cashier@whatthefood.local"],
+];
+
+const DEFAULT_SETTINGS: Record<string, string> = {
+  cafeName: "What The Food",
+  currency: "PKR",
+  currencySymbol: "Rs",
+  receiptFooter: "Thank you for visiting What The Food!",
+  address: "Karachi",
+};
+
+type PlaceholderItem = {
+  name: string;
+  price: number;
+  category: string;
+  sku: string;
+  description?: string;
+};
+
+const PLACEHOLDER_ITEMS: PlaceholderItem[] = [
+  {
+    name: "Saucewitch",
+    price: 750,
+    category: "Sandwiches",
+    sku: "TIS-SAUCE",
+    description: "Classic sauced-up sandwich with pulled chicken and veggies.",
+  },
+  {
+    name: "Tender Dome",
+    price: 850,
+    category: "Sandwiches",
+    sku: "TIS-TENDER",
+    description: "Flavourful chicken tenders between panini bread lined with coleslaw.",
+  },
+  {
+    name: "Franks Feast",
+    price: 950,
+    category: "Sandwiches",
+    sku: "TIS-FRANK",
+    description: "Fried sausages, onion rings and fried tenders in panini with coleslaw.",
+  },
+  {
+    name: "Chicken Tenders",
+    price: 450,
+    category: "Sides",
+    sku: "TIS-TENDERS",
+    description: "Crispy chicken tender pieces.",
+  },
+  { name: "Small Fries", price: 200, category: "Sides", sku: "TIS-FRIES-S" },
+  { name: "Large Fries", price: 350, category: "Sides", sku: "TIS-FRIES-L" },
+  {
+    name: "Onion Rings with Garlic Sauce",
+    price: 300,
+    category: "Sides",
+    sku: "TIS-RINGS",
+  },
+  { name: "Coleslaw", price: 150, category: "Sides", sku: "TIS-SLAW" },
+  { name: "Sauces", price: 50, category: "Sides", sku: "TIS-SAUCE-SIDE" },
+  { name: "Soft Drink", price: 150, category: "Beverages", sku: "TIS-SOFT" },
+  { name: "Karak Chai", price: 120, category: "Beverages", sku: "TIS-KARAK" },
+  { name: "Cava", price: 200, category: "Beverages", sku: "TIS-CAVA" },
+  { name: "Black Cortado", price: 280, category: "Beverages", sku: "TIS-CORTADO" },
+  { name: "Milk Cappuccino", price: 350, category: "Beverages", sku: "TIS-CAP" },
+  { name: "Coffee Frappe", price: 450, category: "Beverages", sku: "TIS-FRAPPE" },
+];
+
+export function demoSeedAllowed(
+  env: NodeJS.ProcessEnv = process.env
+): { ok: true } | { ok: false; reason: string } {
+  if (env.NODE_ENV === "production" && env.ALLOW_DEMO_SEED !== "true") {
+    return {
+      ok: false,
+      reason:
+        "Demo seed is disabled when NODE_ENV=production. It is for local development. Do not point it at a live café database.",
+    };
+  }
+  return { ok: true };
+}
+
+export async function seedDatabase(
+  client: PrismaClient,
+  env: NodeJS.ProcessEnv = process.env
+) {
+  const gate = demoSeedAllowed(env);
+  if (!gate.ok) throw new Error(gate.reason);
+
+  for (const [from, to] of LEGACY_EMAILS) {
     const legacy = await client.user.findUnique({ where: { email: from } });
-    if (legacy) {
-      const clash = await client.user.findUnique({ where: { email: to } });
-      if (!clash) {
-        await client.user.update({
-          where: { id: legacy.id },
-          data: { email: to, passwordHash, role, name, active: true },
-        });
-      }
+    if (!legacy) continue;
+    const clash = await client.user.findUnique({ where: { email: to } });
+    if (clash) continue;
+    await client.user.update({
+      where: { id: legacy.id },
+      data: { email: to },
+    });
+  }
+
+  const missingUsers = [];
+  for (const user of DEMO_USERS) {
+    const existing = await client.user.findUnique({ where: { email: user.email } });
+    if (!existing) missingUsers.push(user);
+  }
+
+  if (missingUsers.length > 0) {
+    const password = env.DEMO_SEED_PASSWORD ?? "";
+    if (password.length < 8) {
+      throw new Error(
+        "Set DEMO_SEED_PASSWORD to at least 8 characters to create missing demo users. Existing passwords are never changed, and the password is not printed."
+      );
     }
-  }
-
-  for (const u of [
-    { email: "admin@whatthefood.local", role: Role.ADMIN, name: "Admin" },
-    {
-      email: "supervisor@whatthefood.local",
-      role: Role.SUPERVISOR,
-      name: "Supervisor",
-    },
-    { email: "cashier@whatthefood.local", role: Role.CASHIER, name: "Cashier" },
-  ]) {
-    await client.user.upsert({
-      where: { email: u.email },
-      update: { passwordHash, name: u.name, role: u.role, active: true },
-      create: {
-        email: u.email,
-        name: u.name,
-        role: u.role,
-        passwordHash,
-      },
-    });
-  }
-
-  const settings: Record<string, string> = {
-    cafeName: "What The Food",
-    currency: "PKR",
-    currencySymbol: "Rs",
-    receiptFooter: "Thank you for visiting What The Food!",
-    address: "Karachi",
-  };
-  for (const [key, value] of Object.entries(settings)) {
-    await client.setting.upsert({
-      where: { key },
-      create: { key, value },
-      update: { value },
-    });
-  }
-
-  // Deactivate old demo categories/products that aren't on the real menu
-  await client.product.updateMany({ data: { isActive: false } });
-
-  async function cat(name: string, sortOrder: number) {
-    return client.category.upsert({
-      where: { name },
-      update: { sortOrder, active: true },
-      create: { name, sortOrder, active: true },
-    });
-  }
-
-  const sandwiches = await cat("Sandwiches", 1);
-  const sides = await cat("Sides", 2);
-  const bev = await cat("Beverages", 3);
-
-  async function item(opts: {
-    name: string;
-    price: number;
-    categoryId: string;
-    sku: string;
-    description?: string;
-  }) {
-    const existing = await client.product.findFirst({ where: { sku: opts.sku } });
-    if (existing) {
-      return client.product.update({
-        where: { id: existing.id },
+    const passwordHash = await bcrypt.hash(password, 10);
+    for (const user of missingUsers) {
+      await client.user.create({
         data: {
-          name: opts.name,
-          price: opts.price,
-          categoryId: opts.categoryId,
-          description: opts.description || null,
-          isActive: true,
-          trackInventory: false,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          active: true,
+          passwordHash,
         },
       });
     }
-    return client.product.create({
+  }
+
+  for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
+    const existing = await client.setting.findUnique({ where: { key } });
+    if (existing) continue;
+    await client.setting.create({ data: { key, value } });
+  }
+
+  const categoryIds = new Map<string, string>();
+  const categoryOrder = ["Sandwiches", "Sides", "Beverages"];
+  for (const [index, name] of categoryOrder.entries()) {
+    const existing = await client.category.findUnique({ where: { name } });
+    if (existing) {
+      categoryIds.set(name, existing.id);
+      continue;
+    }
+    const created = await client.category.create({
+      data: { name, sortOrder: index + 1, active: true },
+    });
+    categoryIds.set(name, created.id);
+  }
+
+  let createdItems = 0;
+  for (const item of PLACEHOLDER_ITEMS) {
+    const existing = await client.product.findFirst({ where: { sku: item.sku } });
+    if (existing) continue;
+    const categoryId = categoryIds.get(item.category);
+    if (!categoryId) continue;
+    await client.product.create({
       data: {
-        name: opts.name,
-        price: opts.price,
-        categoryId: opts.categoryId,
-        sku: opts.sku,
-        description: opts.description || null,
+        name: item.name,
+        price: item.price,
+        categoryId,
+        sku: item.sku,
+        description: item.description ?? null,
         isActive: true,
         trackInventory: false,
       },
     });
+    createdItems += 1;
   }
 
-  // Prices: set placeholders — update in Menu when you confirm flyer prices
-  await item({
-    name: "Saucewitch",
-    price: 750,
-    categoryId: sandwiches.id,
-    sku: "TIS-SAUCE",
-    description:
-      "Classic sauced-up sandwich with pulled chicken and veggies.",
-  });
-  await item({
-    name: "Tender Dome",
-    price: 850,
-    categoryId: sandwiches.id,
-    sku: "TIS-TENDER",
-    description:
-      "Flavourful chicken tenders between panini bread lined with coleslaw.",
-  });
-  await item({
-    name: "Franks Feast",
-    price: 950,
-    categoryId: sandwiches.id,
-    sku: "TIS-FRANK",
-    description:
-      "Fried sausages, onion rings and fried tenders in panini with coleslaw.",
-  });
-
-  await item({
-    name: "Chicken Tenders",
-    price: 450,
-    categoryId: sides.id,
-    sku: "TIS-TENDERS",
-    description: "Crispy chicken tender pieces.",
-  });
-  await item({
-    name: "Small Fries",
-    price: 200,
-    categoryId: sides.id,
-    sku: "TIS-FRIES-S",
-  });
-  await item({
-    name: "Large Fries",
-    price: 350,
-    categoryId: sides.id,
-    sku: "TIS-FRIES-L",
-  });
-  await item({
-    name: "Onion Rings with Garlic Sauce",
-    price: 300,
-    categoryId: sides.id,
-    sku: "TIS-RINGS",
-  });
-  await item({
-    name: "Coleslaw",
-    price: 150,
-    categoryId: sides.id,
-    sku: "TIS-SLAW",
-  });
-  await item({
-    name: "Sauces",
-    price: 50,
-    categoryId: sides.id,
-    sku: "TIS-SAUCE-SIDE",
-  });
-
-  await item({
-    name: "Soft Drink",
-    price: 150,
-    categoryId: bev.id,
-    sku: "TIS-SOFT",
-  });
-  await item({
-    name: "Karak Chai",
-    price: 120,
-    categoryId: bev.id,
-    sku: "TIS-KARAK",
-  });
-  await item({
-    name: "Cava",
-    price: 200,
-    categoryId: bev.id,
-    sku: "TIS-CAVA",
-  });
-  await item({
-    name: "Black Cortado",
-    price: 280,
-    categoryId: bev.id,
-    sku: "TIS-CORTADO",
-  });
-  await item({
-    name: "Milk Cappuccino",
-    price: 350,
-    categoryId: bev.id,
-    sku: "TIS-CAP",
-  });
-  await item({
-    name: "Coffee Frappe",
-    price: 450,
-    categoryId: bev.id,
-    sku: "TIS-FRAPPE",
-  });
-
-  console.log("Seed complete — What The Food menu (This Is Sandwich items)");
-  console.log("  admin@whatthefood.local / password123");
-  console.log("  Update prices in Menu if flyer prices differ.");
+  console.log(
+    `Demo seed finished. New demo users: ${missingUsers.length}. New placeholder items: ${createdItems}. Existing users, passwords, settings, balances, and menu rows were left unchanged.`
+  );
 }
 
-async function main() {
-  await seedDatabase();
+function invokedAsCli(): boolean {
+  const entry = process.argv[1]?.replace(/\\/g, "/") ?? "";
+  return entry.endsWith("/prisma/seed.ts") || entry.endsWith("/prisma/seed.js");
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+if (invokedAsCli()) {
+  const prisma = new PrismaClient();
+  seedDatabase(prisma)
+    .catch((error: unknown) => {
+      console.error(error instanceof Error ? error.message : error);
+      process.exitCode = 1;
+    })
+    .finally(() => prisma.$disconnect());
+}
