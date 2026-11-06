@@ -9,6 +9,7 @@ import {
 import { formatMoney, toNumber } from "@/lib/money";
 import { getSettings } from "@/lib/settings";
 import { ProductForm } from "@/components/product-form";
+import { localProductUploadAllowed } from "@/lib/product-uploads";
 
 export default async function MenuPage({
   searchParams,
@@ -80,6 +81,7 @@ export default async function MenuPage({
         inventoryItems={invItems}
         product={editing || null}
         redirectTo="/admin/menu"
+        allowFileUpload={localProductUploadAllowed()}
       />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

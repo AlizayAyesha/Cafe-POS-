@@ -5,6 +5,7 @@ import { completeOrder, deleteHeldOrder } from "@/actions/orders";
 import { openRegister, closeRegister } from "@/actions/ospos";
 import { lookupGiftCard } from "@/actions/gift-cards";
 import { formatMoney, roundMoney } from "@/lib/money";
+import { formatBusinessDateTime } from "@/core/time/business-time";
 import type { DiscountType, OrderType, PaymentMethod } from "@prisma/client";
 import Link from "next/link";
 
@@ -272,7 +273,7 @@ export function PosClient({
           discountAmount,
           total,
           orderType,
-          at: new Date().toLocaleString(),
+          at: formatBusinessDateTime(new Date()),
         });
         setHeldOrders((prev) => prev.filter((h) => h.id !== heldOrderId));
         clearOrder();
@@ -319,7 +320,8 @@ export function PosClient({
         <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-6">
           <h1 className="text-xl font-bold">{settings.cafeName}</h1>
           <p className="mt-1 text-sm text-stone-600">
-            Open cash register to start selling (OSPOS-style cash up)
+            This café has one shared cash drawer. Opening it here opens it for every
+            signed-in device. Count the float in the drawer, then start selling.
           </p>
           <label className="mt-4 block text-sm">
             Opening float ({settings.currencySymbol})
@@ -365,7 +367,7 @@ export function PosClient({
             {settings.cafeName}
           </p>
           <p className="truncate text-xs text-emerald-100/70 sm:text-sm">
-            POS · {staffName} · Float {money(register.openingFloat)}
+            One shared drawer · {staffName} · Float {money(register.openingFloat)}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

@@ -14,13 +14,12 @@
     "db:setup": "npm run db:push && npm run db:seed",
     "db:studio": "prisma studio --schema=prisma/schema.sqlite.prisma",
     "postinstall": "prisma generate",
-    "test": "vitest run",
+    "test": "prisma generate --schema=prisma/schema.sqlite.prisma && vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
-    "date-fns": "^4.4.0",
     "next": "15.5.26",
     "next-auth": "^5.0.0-beta.32",
     "react": "19.1.0",

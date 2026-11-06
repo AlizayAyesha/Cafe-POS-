@@ -6,7 +6,7 @@ import { Role } from "@prisma/client";
 const root = path.resolve(__dirname, "../..");
 
 export async function ensureTestSchema() {
-  execSync("npx prisma db push --skip-generate", {
+  execSync("npx prisma db push --schema=prisma/schema.sqlite.prisma --skip-generate", {
     cwd: root,
     env: {
       ...process.env,
@@ -51,7 +51,7 @@ export type Fixtures = Awaited<ReturnType<typeof seedSaleFixtures>>;
 
 export async function seedSaleFixtures() {
   const prisma = await getPrisma();
-  const passwordHash = await bcrypt.hash("password123", 4);
+  const passwordHash = await bcrypt.hash("test-only-secret", 4);
 
   const cashier = await prisma.user.create({
     data: {

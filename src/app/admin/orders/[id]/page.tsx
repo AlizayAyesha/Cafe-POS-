@@ -9,6 +9,7 @@ import {
   fulfillmentChipClass,
   fulfillmentLabel,
 } from "@/modules/sales/application/fulfillment";
+import { formatBusinessDateTime } from "@/core/time/business-time";
 
 export default async function OrderDetailPage({
   params,
@@ -31,7 +32,7 @@ export default async function OrderDetailPage({
       <div>
         <h1 className="text-xl font-bold sm:text-2xl">{order.orderNumber}</h1>
         <p className="text-sm text-[var(--muted)]">
-          {order.createdAt.toLocaleString()} · {order.createdBy.name} · paid ·{" "}
+          {formatBusinessDateTime(order.createdAt)} · {order.createdBy.name} · paid ·{" "}
           {order.orderType.replace("_", "-")}
         </p>
         {order.status === "COMPLETED" && (

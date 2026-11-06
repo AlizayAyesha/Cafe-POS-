@@ -32,8 +32,8 @@ export default function LoginPage() {
             <LoginForm />
           </Suspense>
         </div>
-        <p className="mt-6 break-all text-xs text-[var(--muted)]">
-          Admin: admin@whatthefood.local · password123
+        <p className="mt-6 text-xs text-[var(--muted)]">
+          Staff accounts are created by the café admin. This page does not include a demo password.
         </p>
       </div>
     </main>

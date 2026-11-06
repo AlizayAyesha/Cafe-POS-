@@ -23,12 +23,8 @@ Phase 1 Café POS
 
 - Products, categories, staff, settings, audit log.
 
-### Demo logins (local only)
+### Local practice logins
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@whatthefood.local | password123 |
-| Supervisor | supervisor@whatthefood.local | password123 |
-| Cashier | cashier@whatthefood.local | password123 |
+A local database can create missing demo staff when you set `DEMO_SEED_PASSWORD` and run `npm run db:seed`. The sign-in page does not display that password. Ask the admin for the password you chose. Do not reuse a practice password on the live site.
 
-Change these before production.
+The café has one shared cash drawer for every device.

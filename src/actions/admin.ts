@@ -9,37 +9,37 @@ import { requireRole, requireSession } from "@/lib/session";
 import { hasMinRole } from "@/lib/permissions";
 import { toNumber } from "@/lib/money";
 import {
-  startOfDay,
-  endOfDay,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  subDays,
-} from "date-fns";
+  businessCreatedAtFilter,
+  businessHour,
+  startOfBusinessDay,
+  startOfBusinessMonth,
+  startOfBusinessWeek,
+  startOfNextBusinessDay,
+  startOfNextBusinessMonth,
+  startOfNextBusinessWeek,
+} from "@/core/time/business-time";
 
-export async function getDashboardStats() {
+export async function getDashboardStats(now = new Date()) {
   await requireRole(Role.SUPERVISOR);
-  const now = new Date();
-  const dayStart = startOfDay(now);
-  const dayEnd = endOfDay(now);
-  const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
-  const monthStart = startOfMonth(now);
-  const monthEnd = endOfMonth(now);
+  const dayStart = startOfBusinessDay(now);
+  const dayEnd = startOfNextBusinessDay(now);
+  const weekStart = startOfBusinessWeek(now);
+  const weekEnd = startOfNextBusinessWeek(now);
+  const monthStart = startOfBusinessMonth(now);
+  const monthEnd = startOfNextBusinessMonth(now);
 
   const [todayOrders, weekOrders, monthOrders, recentOrders, inventory] =
     await Promise.all([
       prisma.order.findMany({
-        where: { status: "COMPLETED", createdAt: { gte: dayStart, lte: dayEnd } },
+        where: { status: "COMPLETED", createdAt: { gte: dayStart, lt: dayEnd } },
         include: { items: true },
       }),
       prisma.order.findMany({
-        where: { status: "COMPLETED", createdAt: { gte: weekStart, lte: weekEnd } },
+        where: { status: "COMPLETED", createdAt: { gte: weekStart, lt: weekEnd } },
         select: { total: true },
       }),
       prisma.order.findMany({
-        where: { status: "COMPLETED", createdAt: { gte: monthStart, lte: monthEnd } },
+        where: { status: "COMPLETED", createdAt: { gte: monthStart, lt: monthEnd } },
         select: { total: true },
       }),
       prisma.order.findMany({
@@ -91,11 +91,11 @@ export async function getDashboardStats() {
   };
 }
 
-export async function getPeakHourAnalysis(days = 7) {
+export async function getPeakHourAnalysis(days = 7, now = new Date()) {
   await requireRole(Role.SUPERVISOR);
-  const from = subDays(new Date(), days);
+  const from = new Date(startOfBusinessDay(now).getTime() - (days - 1) * 24 * 60 * 60 * 1000);
   const orders = await prisma.order.findMany({
-    where: { status: "COMPLETED", createdAt: { gte: from } },
+    where: { status: "COMPLETED", createdAt: { gte: from, lt: startOfNextBusinessDay(now) } },
     select: { createdAt: true, total: true },
   });
 
@@ -106,7 +106,7 @@ export async function getPeakHourAnalysis(days = 7) {
   }));
 
   for (const o of orders) {
-    const h = o.createdAt.getHours();
+    const h = businessHour(o.createdAt);
     hours[h].orders += 1;
     hours[h].revenue += toNumber(o.total);
   }
@@ -116,17 +116,11 @@ export async function getPeakHourAnalysis(days = 7) {
 
 export async function getProductSalesReport(from?: string, to?: string) {
   await requireRole(Role.SUPERVISOR);
+  const createdAt = businessCreatedAtFilter(from, to);
   const orders = await prisma.order.findMany({
     where: {
       status: "COMPLETED",
-      ...(from || to
-        ? {
-            createdAt: {
-              ...(from ? { gte: new Date(from) } : {}),
-              ...(to ? { lte: new Date(to) } : {}),
-            },
-          }
-        : {}),
+      ...(createdAt ? { createdAt } : {}),
     },
     include: { items: true },
   });

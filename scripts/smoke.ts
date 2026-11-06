@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -12,10 +11,13 @@ async function main() {
   console.log("Products:", await prisma.product.count());
   console.log("Categories:", await prisma.category.count());
 
-  const admin = await prisma.user.findUniqueOrThrow({
+  const admin = await prisma.user.findUnique({
     where: { email: "admin@whatthefood.local" },
   });
-  console.log("Password check:", await bcrypt.compare("password123", admin.passwordHash));
+  if (!admin) {
+    console.log("No local demo admin present. Smoke sale skipped.");
+    return;
+  }
 
   const product = await prisma.product.findFirstOrThrow({
     where: { isActive: true, trackInventory: true },

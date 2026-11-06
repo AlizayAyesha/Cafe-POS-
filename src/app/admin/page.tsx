@@ -2,6 +2,7 @@ import { getDashboardStats } from "@/actions/admin";
 import { getSettings } from "@/lib/settings";
 import { formatMoney, toNumber } from "@/lib/money";
 import Link from "next/link";
+import { BUSINESS_TIME_LABEL, formatBusinessDateTime } from "@/core/time/business-time";
 
 export default async function AdminDashboardPage() {
   const [stats, settings] = await Promise.all([getDashboardStats(), getSettings()]);
@@ -23,6 +24,9 @@ export default async function AdminDashboardPage() {
         <h1 className="text-xl font-bold text-stone-900 sm:text-2xl">Dashboard</h1>
         <p className="text-sm text-stone-600">
           {settings.cafeName} · operational overview
+        </p>
+        <p className="text-xs text-stone-500">
+          Today, this week, and this month follow {BUSINESS_TIME_LABEL}. Times below are PKT.
         </p>
       </div>
 
@@ -115,7 +119,7 @@ export default async function AdminDashboardPage() {
               <div className="min-w-0">
                 <p className="font-medium">{o.orderNumber}</p>
                 <p className="text-xs text-stone-500">
-                  {o.createdAt.toLocaleString()} · {o.createdBy.name}
+                  {formatBusinessDateTime(o.createdAt)} · {o.createdBy.name}
                 </p>
               </div>
               <p className="shrink-0 font-semibold tabular-nums">
@@ -148,7 +152,7 @@ export default async function AdminDashboardPage() {
                     </Link>
                   </td>
                   <td className="py-2.5 text-stone-600">
-                    {o.createdAt.toLocaleString()}
+                    {formatBusinessDateTime(o.createdAt)}
                   </td>
                   <td className="py-2.5">{o.createdBy.name}</td>
                   <td className="py-2.5 tabular-nums">{money(toNumber(o.total))}</td>

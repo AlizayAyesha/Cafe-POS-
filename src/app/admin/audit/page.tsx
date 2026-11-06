@@ -1,4 +1,5 @@
 import { listAuditLogs } from "@/actions/ospos";
+import { formatBusinessDateTime } from "@/core/time/business-time";
 
 export default async function AuditPage() {
   const logs = await listAuditLogs(150);
@@ -17,7 +18,7 @@ export default async function AuditPage() {
       <div className="space-y-3 md:hidden">
         {logs.map((l) => (
           <div key={l.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
-            <p className="text-xs text-stone-500">{l.createdAt.toLocaleString()}</p>
+            <p className="text-xs text-stone-500">{formatBusinessDateTime(l.createdAt)}</p>
             <p className="mt-1 font-semibold break-words">{l.action}</p>
             <p className="text-sm text-stone-600">{l.user?.name || "System"}</p>
             <p className="mt-1 break-all text-xs text-stone-500">
@@ -46,7 +47,7 @@ export default async function AuditPage() {
             {logs.map((l) => (
               <tr key={l.id} className="border-b border-stone-50">
                 <td className="whitespace-nowrap px-4 py-3">
-                  {l.createdAt.toLocaleString()}
+                  {formatBusinessDateTime(l.createdAt)}
                 </td>
                 <td className="px-4 py-3">{l.user?.name || "System"}</td>
                 <td className="px-4 py-3 font-medium">{l.action}</td>
